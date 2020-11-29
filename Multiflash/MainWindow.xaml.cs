@@ -25,29 +25,29 @@ namespace JBlam.Multiflash
             InitializeComponent();
         }
 
-        bool lastWasHex = false;
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
             var toolset = new ArduinoToolset();
-            var hexBinary = new Binary("C:\\Path\\to\\binary.hex", 0x300000);
-            var binBinary = new Binary("C:\\Path\\to\\binary.bin");
-            var thisBinary = lastWasHex ? binBinary : hexBinary;
-            var tool = toolset.GetToolForBinary(thisBinary) ?? throw new InvalidOperationException("Couldn't get a tool");
-            var s = tool.GetStartInfo(thisBinary, "COM5");
-            s.RedirectStandardOutput = true;
-            s.RedirectStandardError = true;
-            s.RedirectStandardInput = true;
-            s.CreateNoWindow = true;
-            var p = System.Diagnostics.Process.Start(s) ?? throw new InvalidOperationException("Couldn't get a process");
-            await p.WaitForExitAsync();
-            label1.Content = $@"Finished with exit code: {p.ExitCode}
+
+            var set = System.Text.Json.JsonSerializer.Deserialize<BinarySet>(@"{""Name"":""Jeff"",""Binaries"":[{""Path"":""C:\\Path\\to\\binary.hex""}]}");
+            foreach (var binary in set?.Binaries ?? throw new InvalidOperationException(nameof(set)))
+            {
+                var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
+                var s = tool.GetStartInfo(binary, "COM5");
+                s.RedirectStandardOutput = true;
+                s.RedirectStandardError = true;
+                s.RedirectStandardInput = true;
+                s.CreateNoWindow = true;
+                var p = System.Diagnostics.Process.Start(s) ?? throw new InvalidOperationException("Couldn't get a process");
+                await p.WaitForExitAsync();
+                label1.Content = $@"Finished with exit code: {p.ExitCode}
 
 Output:
 {await p.StandardOutput.ReadToEndAsync()}
 
 Error:
 {await p.StandardError.ReadToEndAsync()}";
-            lastWasHex = thisBinary.Format == BinaryFormat.Hex;
+            }
         }
     }
 }
