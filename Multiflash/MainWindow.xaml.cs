@@ -27,7 +27,7 @@ namespace JBlam.Multiflash
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            var s = new Avrdude().GetStartInfo(new Binary(BinaryFormat.Hex, "C:\\Path\\to\\binary.hex"), "COM5");
+            var s = new EspUploaderPyTool().GetStartInfo(new Binary(BinaryFormat.Bin, "C:\\Path\\to\\binary.hex", 0x300000), "COM5");
             s.RedirectStandardOutput = true;
             s.RedirectStandardError = true;
             s.RedirectStandardInput = true;
