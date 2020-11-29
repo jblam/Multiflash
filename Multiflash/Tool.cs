@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace JBlam.Multiflash
 {
-    interface ITool
+    public interface ITool
     {
         bool CanHandle(Binary binary);
         ProcessStartInfo GetStartInfo(Binary binary, string comPort);
@@ -16,6 +16,25 @@ namespace JBlam.Multiflash
 
     public class Avrdude : ITool
     {
+        private readonly string exePath;
+        private readonly string configPath;
+
+        public Avrdude(string exePath, string configPath)
+        {
+            if (string.IsNullOrEmpty(exePath))
+            {
+                throw new ArgumentException($"'{nameof(exePath)}' cannot be null or empty", nameof(exePath));
+            }
+
+            if (string.IsNullOrEmpty(configPath))
+            {
+                throw new ArgumentException($"'{nameof(configPath)}' cannot be null or empty", nameof(configPath));
+            }
+
+            this.exePath = exePath;
+            this.configPath = configPath;
+        }
+
         public bool CanHandle(Binary binary)
         {
             return binary.Format == BinaryFormat.Hex;
@@ -23,9 +42,9 @@ namespace JBlam.Multiflash
 
         public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
         {
-            var output = new ProcessStartInfo(@"C:\Program Files (x86)\Arduino\hardware\tools\avr\bin\avrdude.exe");
+            var output = new ProcessStartInfo(exePath);
             output.ArgumentList.Add(@"-C");
-            output.ArgumentList.Add(@"C:\Program Files (x86)\Arduino\hardware\tools\avr\etc\avrdude.conf");
+            output.ArgumentList.Add(configPath);
             output.ArgumentList.Add("-patmega328p");
             output.ArgumentList.Add("-carduino");
             output.ArgumentList.Add("-P");
@@ -39,20 +58,32 @@ namespace JBlam.Multiflash
 
     public class EspUploaderPyTool : ITool
     {
+        private readonly string pythonPath;
+        private readonly string uploadScriptPath;
+
+        public EspUploaderPyTool(string pythonPath, string uploadScriptPath)
+        {
+            if (string.IsNullOrEmpty(pythonPath))
+            {
+                throw new ArgumentException($"'{nameof(pythonPath)}' cannot be null or empty", nameof(pythonPath));
+            }
+
+            if (string.IsNullOrEmpty(uploadScriptPath))
+            {
+                throw new ArgumentException($"'{nameof(uploadScriptPath)}' cannot be null or empty", nameof(uploadScriptPath));
+            }
+
+            this.pythonPath = pythonPath;
+            this.uploadScriptPath = uploadScriptPath;
+        }
         public bool CanHandle(Binary binary) => binary.Format == BinaryFormat.Bin;
         public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
         {
-            var pythonDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Arduino15\packages\esp8266\tools\python3\3.7.2-post1");
-            var scriptDir = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                @"Arduino15\packages\esp8266\hardware\esp8266\2.7.4\tools");
-            return new ProcessStartInfo(Path.Combine(pythonDir, "python.exe"))
+            return new ProcessStartInfo(pythonPath)
             {
                 ArgumentList =
                 {
-                    Path.Combine(scriptDir, "upload.py"),
+                    uploadScriptPath,
                     "--chip",
                     "esp8266",
                     "--port",

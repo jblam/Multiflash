@@ -25,21 +25,29 @@ namespace JBlam.Multiflash
             InitializeComponent();
         }
 
+        bool lastWasHex = false;
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            var s = new EspUploaderPyTool().GetStartInfo(new Binary(BinaryFormat.Bin, "C:\\Path\\to\\binary.hex", 0x300000), "COM5");
+            var toolset = new ArduinoToolset();
+            var hexBinary = new Binary(BinaryFormat.Hex, "C:\\Path\\to\\binary.hex", 0x300000);
+            var binBinary = new Binary(BinaryFormat.Bin, "C:\\Path\\to\\binary.bin");
+            var thisBinary = lastWasHex ? binBinary : hexBinary;
+            var tool = toolset.GetToolForBinary(thisBinary) ?? throw new InvalidOperationException("Couldn't get a tool");
+            var s = tool.GetStartInfo(thisBinary, "COM5");
             s.RedirectStandardOutput = true;
             s.RedirectStandardError = true;
             s.RedirectStandardInput = true;
             s.CreateNoWindow = true;
-            var p = System.Diagnostics.Process.Start(s);
+            var p = System.Diagnostics.Process.Start(s) ?? throw new InvalidOperationException("Couldn't get a process");
             await p.WaitForExitAsync();
             label1.Content = $@"Finished with exit code: {p.ExitCode}
+
 Output:
 {await p.StandardOutput.ReadToEndAsync()}
 
 Error:
 {await p.StandardError.ReadToEndAsync()}";
+            lastWasHex = thisBinary.Format == BinaryFormat.Hex;
         }
     }
 }
