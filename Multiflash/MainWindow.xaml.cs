@@ -24,5 +24,22 @@ namespace JBlam.Multiflash
         {
             InitializeComponent();
         }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var s = new Avrdude().GetStartInfo(new Binary(BinaryFormat.Hex, "C:\\Path\\to\\binary.hex"), "COM5");
+            s.RedirectStandardOutput = true;
+            s.RedirectStandardError = true;
+            s.RedirectStandardInput = true;
+            s.CreateNoWindow = true;
+            var p = System.Diagnostics.Process.Start(s);
+            await p.WaitForExitAsync();
+            label1.Content = $@"Finished with exit code: {p.ExitCode}
+Output:
+{await p.StandardOutput.ReadToEndAsync()}
+
+Error:
+{await p.StandardError.ReadToEndAsync()}";
+        }
     }
 }
