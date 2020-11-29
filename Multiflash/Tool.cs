@@ -51,7 +51,8 @@ namespace JBlam.Multiflash
             output.ArgumentList.Add(comPort);
             output.ArgumentList.Add("-b115200");
             output.ArgumentList.Add("-D");
-            output.ArgumentList.Add($"-Uflash:w:\"{binary.Path}\":i");
+            // Note that we don't quote the path here, because ArgumentList will inappropriately escape the quotes.
+            output.ArgumentList.Add($"-Uflash:w:{binary.Path}:i");
             return output;
         }
     }

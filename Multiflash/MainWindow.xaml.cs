@@ -36,7 +36,7 @@ namespace JBlam.Multiflash
             }
         }
 
-        private async Task RunTool(Binary binary)
+        private async Task RunTool(Binary binary, string? workingDir = null)
         {
             var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
             var s = tool.GetStartInfo(binary, "COM5");
@@ -44,6 +44,7 @@ namespace JBlam.Multiflash
             s.RedirectStandardError = true;
             s.RedirectStandardInput = true;
             s.CreateNoWindow = true;
+            s.WorkingDirectory = workingDir ?? s.WorkingDirectory;
             var p = System.Diagnostics.Process.Start(s) ?? throw new InvalidOperationException("Couldn't get a process");
             await p.WaitForExitAsync();
             label1.Content = $@"Finished with exit code: {p.ExitCode}
@@ -74,7 +75,7 @@ Error:
             var (location, contents) = await BinarySet.Extract(paths[0]);
             foreach (var item in contents?.Binaries ?? throw new InvalidOperationException("Unable to parse any binaries"))
             {
-                await RunTool(item with { Path = System.IO.Path.Combine(location, item.Path) });
+                await RunTool(item, location);
             }
             ;
         }
