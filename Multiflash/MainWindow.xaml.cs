@@ -29,8 +29,8 @@ namespace JBlam.Multiflash
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
             var toolset = new ArduinoToolset();
-            var hexBinary = new Binary(BinaryFormat.Hex, "C:\\Path\\to\\binary.hex", 0x300000);
-            var binBinary = new Binary(BinaryFormat.Bin, "C:\\Path\\to\\binary.bin");
+            var hexBinary = new Binary("C:\\Path\\to\\binary.hex", 0x300000);
+            var binBinary = new Binary("C:\\Path\\to\\binary.bin");
             var thisBinary = lastWasHex ? binBinary : hexBinary;
             var tool = toolset.GetToolForBinary(thisBinary) ?? throw new InvalidOperationException("Couldn't get a tool");
             var s = tool.GetStartInfo(thisBinary, "COM5");
