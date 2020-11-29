@@ -49,5 +49,25 @@ Error:
 {await p.StandardError.ReadToEndAsync()}";
             }
         }
+
+        private void DockPanel_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        }
+
+        private async void DockPanel_Drop(object sender, DragEventArgs e)
+        {
+            var data = e.Data.GetData(DataFormats.FileDrop);
+            if (data is not string[] paths)
+            {
+                throw new InvalidOperationException("Allowed drop which did not contain any files");
+            }
+            if (paths.Length != 1)
+            {
+                throw new NotSupportedException("Multiple files not supported");
+            }
+            var set = await BinarySet.Deserialise(paths[0]);
+            ;
+        }
     }
 }
