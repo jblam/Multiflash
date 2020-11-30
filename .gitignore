@@ -338,3 +338,8 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+############################################### Actual human things!
+
+# ignore any sample data which lives in the repo for convenience
+/Multiflash/Samples
