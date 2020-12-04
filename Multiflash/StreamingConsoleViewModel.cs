@@ -7,41 +7,59 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace JBlam.Multiflash
 {
-    class StreamingDummyViewModel : INotifyPropertyChanged
+    public class StreamingConsoleViewModel : INotifyPropertyChanged
     {
-        public StreamingDummyViewModel()
+        private readonly int expectedExitCode;
+
+        public StreamingConsoleViewModel(Process process, int expectedExitCode = 0)
         {
-            Start();
-        }
-        const int Length = 4;
-        static string Print(int i) => string.Join(
-            null,
-            "[".Concat(Enumerable.Repeat('\b', Length - i))
-                .Concat(Enumerable.Repeat('#', i))
-                .Concat(Enumerable.Repeat(' ', Length - i)
-                .Concat("]")));
-        public event PropertyChangedEventHandler? PropertyChanged;
-        public ObservableCollection<ConsoleOutput> Output { get; } = new();
-        public async void Start()
-        {
-            Output.Add(new(OutputKind.StdOut, "Started"));
-            Output.Add(new(default, "[" + string.Join(null, Enumerable.Repeat(' ', Length)) + "]"));
-            for (int i = 0; i < Length; i++)
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
-                Output[^1] = new(default, Print(i));
-            }
-            Output[^1] = new(default, Print(Length));
-            Output.Add(new(OutputKind.StdOut, "Finished"));
-            ExitCode = 1;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ExitCode)));
+            Process = process ?? throw new ArgumentNullException(nameof(process));
+            process.Exited += (sender, e) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+            process.ErrorDataReceived += (sender, e) => Process_DataReceived(OutputKind.StdErr, e.Data);
+            process.OutputDataReceived += (sender, e) => Process_DataReceived(OutputKind.StdOut, e.Data);
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
+            this.expectedExitCode = expectedExitCode;
         }
 
-        public int? ExitCode { get; set; } = null;
-        public int ExpectedExitCode { get; } = 7;
+        private void Process_DataReceived(OutputKind kind, string? data)
+        {
+            if (data is not null)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (!Output.Any() || !data.StartsWith('\b'))
+                    {
+                        Output.Add(new(kind, data));
+                    }
+                    else
+                    {
+                        var (lastkind, lastdata) = Output[^1];
+                        if (lastkind != kind)
+                        {
+                            Output.Add(new(kind, data));
+                        }
+                        else
+                        {
+                            Output[^1] = new(kind, StringComposer.Compose(lastdata, data));
+                        }
+                    }
+                });
+            }
+        }
+
+        public Process Process { get; }
+        public ObservableCollection<ConsoleOutput> Output { get; } = new();
+
+        public int? ExitCode => Process.HasExited ? null : Process.ExitCode;
+        public bool? IsSuccess => ExitCode == expectedExitCode;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
     public enum OutputKind
     {

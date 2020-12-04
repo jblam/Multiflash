@@ -38,7 +38,8 @@ namespace JBlam.Multiflash
 
         private async Task RunTool(Binary binary, string? workingDir = null)
         {
-            var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
+            // var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
+            var tool = new DemoTool();
             var s = tool.GetStartInfo(binary, "COM5");
             s.RedirectStandardOutput = true;
             s.RedirectStandardError = true;
@@ -46,14 +47,10 @@ namespace JBlam.Multiflash
             s.CreateNoWindow = true;
             s.WorkingDirectory = workingDir ?? s.WorkingDirectory;
             var p = System.Diagnostics.Process.Start(s) ?? throw new InvalidOperationException("Couldn't get a process");
+            var vm = new StreamingConsoleViewModel(p);
+            console.DataContext = vm;
             await p.WaitForExitAsync();
-            label1.Content = $@"Finished with exit code: {p.ExitCode}
-
-Output:
-{await p.StandardOutput.ReadToEndAsync()}
-
-Error:
-{await p.StandardError.ReadToEndAsync()}";
+            label1.Content = $@"Finished with exit code: {p.ExitCode}";
         }
 
         private void DockPanel_DragEnter(object sender, DragEventArgs e)

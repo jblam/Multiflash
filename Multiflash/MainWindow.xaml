@@ -6,12 +6,9 @@
         xmlns:local="clr-namespace:JBlam.Multiflash"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Window.Resources>
-        <local:StreamingDummyViewModel x:Key="dummy" />
-    </Window.Resources>
     <DockPanel AllowDrop="True" DragEnter="DockPanel_DragEnter" Drop="DockPanel_Drop">
         <Button DockPanel.Dock="Top" Click="Button_Click">Go</Button>
         <Label Name="label1" FontFamily="Consolas">asfd</Label>
-        <local:StreamingConsole DataContext="{StaticResource dummy}"></local:StreamingConsole>
+        <local:StreamingConsole x:Name="console"></local:StreamingConsole>
     </DockPanel>
 </Window>
