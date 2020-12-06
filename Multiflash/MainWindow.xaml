@@ -6,7 +6,11 @@
         xmlns:local="clr-namespace:JBlam.Multiflash"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <Window.DataContext>
+        <local:MultiflashViewModel />
+    </Window.DataContext>
     <DockPanel AllowDrop="True" DragEnter="DockPanel_DragEnter" Drop="DockPanel_Drop">
+        <local:ComPortSelector DockPanel.Dock="Top" DataContext="{Binding ComPortSelector}" />
         <Button DockPanel.Dock="Top" Click="Button_Click">Go</Button>
         <Label Name="label1" FontFamily="Consolas">asfd</Label>
         <local:StreamingConsole x:Name="console"></local:StreamingConsole>
