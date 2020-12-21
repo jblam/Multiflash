@@ -39,7 +39,42 @@ namespace JBlam.Multiflash.Tests
             var original = "x";
             var withBackspace = "\b\b123";
             var actual = StringComposer.Compose(original, withBackspace);
-            Assert.AreEqual("\b123", actual);
+            Assert.AreEqual("123", actual);
+        }
+
+        [TestMethod]
+        public void CanComposeEmbeddedBackspaces()
+        {
+            var original = "0";
+            var withEmbedded = "1xx\b\b23";
+            var actual = StringComposer.Compose(original, withEmbedded);
+            Assert.AreEqual("0123", actual);
+        }
+
+        [TestMethod]
+        public void ErasesFirstWhenLeadingCr()
+        {
+            var original = "x";
+            var withCr = "\r123";
+            var actual = StringComposer.Compose(original, withCr);
+            Assert.AreEqual("123", actual);
+        }
+        [TestMethod]
+        public void ErasesLeadingBeforeEmbeddedCr()
+        {
+            var original = "x";
+            var withCr = "xxx\r123";
+            var actual = StringComposer.Compose(original, withCr);
+            Assert.AreEqual("123", actual);
+        }
+
+        [TestMethod]
+        public void ErasesWithBackspaceAfterCr()
+        {
+            var first = "x";
+            var second = "xx\rx\b\b123";
+            var actual = StringComposer.Compose(first, second);
+            Assert.AreEqual("123", actual);
         }
     }
 }
