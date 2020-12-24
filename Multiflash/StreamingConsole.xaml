@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:JBlam.Multiflash"
              xmlns:helpers="clr-namespace:JBlam.Multiflash.Helpers"
              mc:Ignorable="d" 
-             d:DataContext="{d:DesignInstance local:StreamingDummyViewModel}"
+             d:DataContext="{d:DesignInstance local:StreamingConsoleViewModel}"
              d:DesignHeight="450" d:DesignWidth="800"
              Background="BlanchedAlmond">
     <Label DockPanel.Dock="Bottom" FontFamily="Consolas">

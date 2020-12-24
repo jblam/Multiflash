@@ -25,7 +25,7 @@ namespace JBlam.Multiflash
             InitializeComponent();
         }
 
-        readonly IToolset toolset = new ArduinoToolset();
+        readonly IToolset toolset = new DummyToolset();
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -38,9 +38,8 @@ namespace JBlam.Multiflash
 
         private async Task RunTool(Binary binary, string? workingDir = null)
         {
-            // var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
-            var tool = new DemoTool();
-            var s = tool.GetStartInfo(binary, "COM5");
+            var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
+            var s = tool.GetStartInfo(binary, ((MultiflashViewModel)DataContext).ComPortSelector.SelectedPort ?? throw new InvalidOperationException("Couldn't get the port"));
             s.RedirectStandardOutput = true;
             s.RedirectStandardError = true;
             s.RedirectStandardInput = true;

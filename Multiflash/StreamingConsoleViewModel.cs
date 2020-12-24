@@ -20,33 +20,49 @@ namespace JBlam.Multiflash
         {
             Process = process ?? throw new ArgumentNullException(nameof(process));
             process.Exited += (sender, e) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-            process.ErrorDataReceived += (sender, e) => Process_DataReceived(OutputKind.StdErr, e.Data);
-            process.OutputDataReceived += (sender, e) => Process_DataReceived(OutputKind.StdOut, e.Data);
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
+
+            // Task.Run is necessary because awaiting still blocks the UI thread.
+            _ = Task.Run(() => Consume(process.StandardOutput, OutputKind.StdOut));
+            _ = Task.Run(() => Consume(process.StandardError, OutputKind.StdErr));
             this.expectedExitCode = expectedExitCode;
         }
 
-        private void Process_DataReceived(OutputKind kind, string? data)
+        async Task Consume(System.IO.StreamReader s, OutputKind kind)
         {
-            if (data is not null)
+            var buffer = new char[1024];
+            while (!s.EndOfStream)
             {
+                // Note that this does block the active thread; we must Task.Run.
+                var count = await s.ReadAsync(buffer).ConfigureAwait(false);
+                AppendData(kind, new string(buffer.AsSpan(0, count)));
+            }
+
+            void AppendData(OutputKind kind, string data)
+            {
+                var splitData = StringComposer.Split(data);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (!Output.Any() || !data.StartsWith('\b'))
+                    // TODO: does/should data trail a newline char?
+                    foreach (var line in splitData)
                     {
-                        Output.Add(new(kind, data));
-                    }
-                    else
-                    {
-                        var (lastkind, lastdata) = Output[^1];
-                        if (lastkind != kind)
+                        if (!Output.Any())
                         {
-                            Output.Add(new(kind, data));
+                            Output.Add(new(kind, line));
+                            Debug.WriteLine($"Adding {kind}: {line} ({line.Length})");
                         }
                         else
                         {
-                            Output[^1] = new(kind, StringComposer.Compose(lastdata, data));
+                            var (lastkind, lastdata) = Output[^1];
+                            if (lastkind != kind)
+                            {
+                                Output.Add(new(kind, line));
+                                Debug.WriteLine($"Adding {kind}: {line} ({line.Length})");
+                            }
+                            else
+                            {
+                                Output[^1] = new(kind, StringComposer.Compose(lastdata, line));
+                                Debug.WriteLine($"Composing {kind}: {line} ({line.Length})");
+                            }
                         }
                     }
                 });

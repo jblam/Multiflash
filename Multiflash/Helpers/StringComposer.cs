@@ -15,6 +15,7 @@ namespace JBlam.Multiflash.Helpers
             Push,
             Pop
         }
+        public static string[] Split(string input) => input.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
         public static string Compose(string first, string second)
         {
             var printables = BuildParts(first, second);
