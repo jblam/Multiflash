@@ -30,6 +30,7 @@ namespace JBlam.Multiflash
         async Task Consume(System.IO.StreamReader s, OutputKind kind)
         {
             var buffer = new char[1024];
+            var allSpans = new List<string>();
             while (!s.EndOfStream)
             {
                 // Note that this does block the active thread; we must Task.Run.
@@ -39,30 +40,21 @@ namespace JBlam.Multiflash
 
             void AppendData(OutputKind kind, string data)
             {
-                var splitData = StringComposer.Split(data);
+                allSpans.Add(data);
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    // TODO: does/should data trail a newline char?
-                    foreach (var line in splitData)
+                    var shouldReplace = Output.Any() && Output[^1].Kind == kind;
+                    var lines = StringComposer.ToLines(shouldReplace ? Output[^1].Data : "", data);
+                    foreach (var line in lines)
                     {
-                        if (!Output.Any())
+                        if (shouldReplace)
                         {
-                            Output.Add(new(kind, line));
-                            Debug.WriteLine($"Adding {kind}: {line} ({line.Length})");
+                            Output[^1] = new(kind, line);
+                            shouldReplace = false;
                         }
                         else
                         {
-                            var (lastkind, lastdata) = Output[^1];
-                            if (lastkind != kind)
-                            {
-                                Output.Add(new(kind, line));
-                                Debug.WriteLine($"Adding {kind}: {line} ({line.Length})");
-                            }
-                            else
-                            {
-                                Output[^1] = new(kind, StringComposer.Compose(lastdata, line));
-                                Debug.WriteLine($"Composing {kind}: {line} ({line.Length})");
-                            }
+                            Output.Add(new(kind, line));
                         }
                     }
                 });

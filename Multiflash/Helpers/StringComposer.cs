@@ -7,80 +7,118 @@ using System.Threading.Tasks;
 
 namespace JBlam.Multiflash.Helpers
 {
-    public class StringComposer
+    /// <summary>
+    /// Defines methods for composing string according to common rules implemented by terminal consoles.
+    /// </summary>
+    /// <remarks>The composition rules are:
+    /// <list type="bullet">
+    /// <item>The newline <c>\n</c> always starts a new line</item>
+    /// <item>A Windows-style newline <c>\r\n</c> starts a new line</item>
+    /// <item>Backspace <c>\b</c> erases the previous character on the current line</item>
+    /// <item>A carriage-return <c>\r</c> erases the current line unless it's immediately followed by a newline <c>\n</c></item>
+    /// </list>
+    /// </remarks>
+    public static class StringComposer
     {
-        enum ComposeMode
+        static IEnumerable<(T, T?, int)> ZipPeek<T>(this IEnumerable<T> t)
         {
-            Start,
-            Push,
-            Pop
-        }
-        public static string[] Split(string input) => input.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
-        public static string Compose(string first, string second)
-        {
-            var printables = BuildParts(first, second);
-            var output = new char[printables.Sum(m => m.Length)];
-            var index = 0;
-            foreach (var item in printables)
-            {
-                item.CopyTo(output.AsMemory(index));
-                index += item.Length;
-            }
-            return new string(output);
-        }
-        static List<ReadOnlyMemory<char>> BuildParts(string first, string second)
-        {
-            // assume that `first` is all-printable
-            List<ReadOnlyMemory<char>> printables = new();
-            Range activeRange = new Range(0, ^0);
-            var mode = ComposeMode.Start;
+            T item = default!;
             int index = 0;
-            foreach (var c in second)
+            bool didInit = false;
+            foreach (var current in t)
             {
+                if (didInit)
+                {
+                    yield return (item, current, index);
+                    index += 1;
+                }
+                item = current;
+                didInit = true;
+            }
+            if (didInit)
+            {
+                yield return (item, default(T?), index);
+            }
+        }
+
+        /// <summary>
+        /// Produces lines of input, following common composition rules of terminal consoles.
+        /// </summary>
+        /// <param name="first">The existing text on the current line. This must not contain any newlines.</param>
+        /// <param name="second">The new text to append. This may contain any characters.</param>
+        /// <returns>An enumerable of lines to be added to the output, where the first item replaces <paramref name="first"/></returns>
+        public static IEnumerable<string> ToLines(string first, string second)
+        {
+            Debug.Assert(!first.Contains('\n'));
+
+            List<Range> ranges = new()
+            {
+                new(0, first.Length),
+                new(0, 0),
+            };
+            foreach (var (c, peek, index) in second.ZipPeek())
+            {
+                var nextIndex = index + 1;
                 if (c == '\b')
                 {
-                    if (mode == ComposeMode.Push)
-                        mode = ComposeMode.Pop;
-                    activeRange = new Range(activeRange.Start, Decrement(activeRange.End));
+                    // Backspace erases a character, if there is one to erase, and skips the actual char.
+                    PopChar(ranges);
+                    ranges.Add(new(nextIndex, nextIndex));
                 }
-                else if (c == '\r')
+                else if (c == '\r' && peek != '\n')
                 {
-                    printables.Clear();
-                    activeRange = default;
-                    mode = ComposeMode.Pop;
+                    // Carriage Return, if not followed by a newline, will reset to the next char.
+                    ranges.Clear();
+                    ranges.Add(new(0, 0));
+                    ranges.Add(new(nextIndex, nextIndex));
                 }
-                else if (mode == ComposeMode.Push)
+                else if (c == '\n')
                 {
-                    Debug.Assert(!activeRange.End.IsFromEnd);
-                    activeRange = new Range(activeRange.Start, activeRange.End.Value + 1);
+                    // Newline will yield the current state, then reset to the next char.
+                    yield return BuildString(ranges, first, second);
+                    ranges.Clear();
+                    ranges.Add(new(0, 0));
+                    ranges.Add(new(nextIndex, nextIndex));
                 }
-                else
+                else if (c != '\r')
                 {
-                    printables.Add(ActiveMemory());
-                    activeRange = new(index, index + 1);
-                    mode = ComposeMode.Push;
+                    // Otherwise, exclude the current char only if it's the CR of a CRLF.
+                    ranges[^1] = new(ranges[^1].Start, nextIndex);
                 }
-                index += 1;
             }
-            printables.Add(ActiveMemory());
-            return printables;
+            yield return BuildString(ranges, first, second);
 
-
-            static Index Decrement(Index i)
+            static string BuildString(List<Range> ranges, string first, string second)
             {
-                if (i.IsFromEnd)
-                    return new Index(i.Value + 1, true);
-                else
-                    return new Index(Math.Max(0, i.Value - 1), false);
+                var rangeAndReference = ranges.Select((range, idx) => (range, reference: idx == 0 ? first : second));
+                return string.Join(null, rangeAndReference.Select(t => t.reference[t.range]));
             }
-            ReadOnlyMemory<char> ActiveMemory()
+
+            static void PopChar(List<Range> ranges)
             {
-                var target = mode == ComposeMode.Start ? first : second;
-                if (activeRange.End.IsFromEnd && activeRange.End.Value >= target.Length)
-                    return ReadOnlyMemory<char>.Empty;
-                if (activeRange.End.Value < activeRange.Start.Value)
-                    return ReadOnlyMemory<char>.Empty;
-                return target.AsMemory(activeRange);
+                while (ranges.Count > 0)
+                {
+                    var candidate = ranges[^1];
+                    Debug.Assert(!candidate.End.IsFromEnd);
+                    if (candidate.End.Value > candidate.Start.Value)
+                    {
+                        // if we can shorten this range, do so
+                        ranges[^1] = new(candidate.Start, candidate.End.Value - 1);
+                        return;
+                    }
+                    else if (ranges.Count == 1)
+                    {
+                        // If we cannot shorten the only range remaining, bail.
+                        // The first range always points to the "first string",
+                        // so we need to retain a range even if it's zero-length.
+                        return;
+                    }
+                    else
+                    {
+                        // The candidate is empty; pop it and try the previous.
+                        ranges.RemoveAt(ranges.Count - 1);
+                    }
+                }
             }
         }
     }
