@@ -64,8 +64,9 @@ namespace JBlam.Multiflash
         public Process Process { get; }
         public ObservableCollection<ConsoleOutput> Output { get; } = new();
 
-        public int? ExitCode => Process.HasExited ? null : Process.ExitCode;
-        public bool? IsSuccess => ExitCode == expectedExitCode;
+        public int? ExitCode => Process.HasExited ? Process.ExitCode : null;
+        public bool? IsSuccess => ExitCode.HasValue ? ExitCode == expectedExitCode : null;
+        public bool IsRunning => !Process.HasExited;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

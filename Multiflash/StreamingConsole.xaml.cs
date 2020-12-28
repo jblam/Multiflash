@@ -26,5 +26,14 @@ namespace JBlam.Multiflash
         {
             InitializeComponent();
         }
+
+        private void ContentPresenter_Loaded(object sender, RoutedEventArgs e)
+        {
+            // JB 2020-12-28: the default presentation template for an expander's header
+            // does not stretch to fit, for whatever reason. There's a variety of workarounds
+            // described here: https://stackoverflow.com/q/31161591
+            // and here: https://joshsmithonwpf.wordpress.com/2007/02/24/stretching-content-in-an-expander-header/
+            ((FrameworkElement)((FrameworkElement)sender).TemplatedParent).HorizontalAlignment = HorizontalAlignment.Stretch;
+        }
     }
 }

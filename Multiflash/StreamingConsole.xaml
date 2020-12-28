@@ -7,15 +7,44 @@
              xmlns:helpers="clr-namespace:JBlam.Multiflash.Helpers"
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance local:StreamingConsoleViewModel}"
-             d:DesignHeight="450" d:DesignWidth="800"
-             Background="BlanchedAlmond">
-    <Label DockPanel.Dock="Bottom" FontFamily="Consolas">
-        <ItemsControl ItemsSource="{Binding Output}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Data}" />
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </Label>
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisible" />
+    </UserControl.Resources>
+    <Expander>
+        <Expander.HeaderTemplate>
+            <DataTemplate>
+                <ContentPresenter Content="{TemplateBinding Content}" Loaded="ContentPresenter_Loaded" />
+            </DataTemplate>
+        </Expander.HeaderTemplate>
+        <Expander.Header>
+            <StackPanel>
+                <Label>
+                    <TextBlock>
+                        <TextBlock.Resources>
+                            <helpers:ConditionalValueConverter x:Key="SuccessIcon" TrueValue="✅" FalseValue="❎" NullValue="⌚" />
+                            <helpers:ConditionalValueConverter x:Key="SuccessTooltip"
+                                                               TrueValue="Successful"
+                                                               FalseValue="Failed"
+                                                               NullValue="Running" />
+                        </TextBlock.Resources>
+                        <Run ToolTip="{Binding IsSuccess, Converter={StaticResource SuccessTooltip}, Mode=OneWay}"
+                             Text="{Binding IsSuccess, Converter={StaticResource SuccessIcon}, FallbackValue=😶, Mode=OneWay}">
+                        </Run>
+                        <Run Text="{Binding Process.ProcessName, Mode=OneWay, FallbackValue='Not started'}" />
+                    </TextBlock>
+                </Label>
+                <ProgressBar IsIndeterminate="True" Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisible}, FallbackValue=Collapsed}" />
+            </StackPanel>
+        </Expander.Header>
+        <Label DockPanel.Dock="Bottom" FontFamily="Consolas">
+            <ItemsControl ItemsSource="{Binding Output}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Data}" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Label>
+    </Expander>
 </UserControl>
