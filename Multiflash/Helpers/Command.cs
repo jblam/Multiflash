@@ -14,9 +14,22 @@ namespace JBlam.Multiflash.Helpers
 
         public static ParametricCommand<T> Create<T>(Action<T?> execute, Func<T?, bool>? canExecute = null)
             => new ParametricCommand<T>(execute, canExecute);
+
+        public static void RaiseCanExecuteChanged(this ICommand command)
+        {
+            if (command is IRaisableCommand p)
+                p.RaiseCanExecuteChanged();
+            else
+                throw new InvalidOperationException("CanExecuteChanged cannot be raised externally for this command");
+        }
     }
 
-    class ParameterlessCommand : ICommand
+    interface IRaisableCommand : ICommand
+    {
+        void RaiseCanExecuteChanged();
+    }
+
+    class ParameterlessCommand : IRaisableCommand
     {
         private readonly Action execute;
         private readonly Func<bool> canExecute;
@@ -48,7 +61,7 @@ namespace JBlam.Multiflash.Helpers
         void ICommand.Execute(object? parameter) => execute();
     }
 
-    class ParametricCommand<T> : ICommand
+    class ParametricCommand<T> : IRaisableCommand
     {
         private readonly Action<T?> execute;
         private readonly Func<T?, bool> canExecute;

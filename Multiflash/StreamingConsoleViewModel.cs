@@ -16,15 +16,29 @@ namespace JBlam.Multiflash
     {
         private readonly int expectedExitCode;
 
-        public StreamingConsoleViewModel(Process process, int expectedExitCode = 0)
+        public StreamingConsoleViewModel(Binary b, ProcessStartInfo startInfo, int expectedExitCode = 0)
         {
-            Process = process ?? throw new ArgumentNullException(nameof(process));
-            process.Exited += (sender, e) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
-
-            // Task.Run is necessary because awaiting still blocks the UI thread.
-            _ = Task.Run(() => Consume(process.StandardOutput, OutputKind.StdOut));
-            _ = Task.Run(() => Consume(process.StandardError, OutputKind.StdErr));
+            Binary = b;
+            StartInfo = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
             this.expectedExitCode = expectedExitCode;
+        }
+
+        public Process Start()
+        {
+            Process = Process.Start(StartInfo);
+            if (Process is not null)
+            {
+                Process.Exited += (sender, e) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+
+                // Task.Run is necessary because awaiting still blocks the UI thread.
+                _ = Task.Run(() => Consume(Process.StandardOutput, OutputKind.StdOut));
+                _ = Task.Run(() => Consume(Process.StandardError, OutputKind.StdErr));
+            }
+            else
+            {
+                throw new InvalidOperationException("Process failed to start");
+            }
+            return Process;
         }
 
         async Task Consume(System.IO.StreamReader s, OutputKind kind)
@@ -61,12 +75,15 @@ namespace JBlam.Multiflash
             }
         }
 
-        public Process Process { get; }
+        public ProcessStartInfo StartInfo { get; }
+        Process? Process { get; set; }
         public ObservableCollection<ConsoleOutput> Output { get; } = new();
 
-        public int? ExitCode => Process.HasExited ? Process.ExitCode : null;
+        public int? ExitCode => Process is not null && Process.HasExited ? Process.ExitCode : null;
         public bool? IsSuccess => ExitCode.HasValue ? ExitCode == expectedExitCode : null;
-        public bool IsRunning => !Process.HasExited;
+        public bool IsRunning => !Process?.HasExited ?? false;
+
+        public Binary Binary { get; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

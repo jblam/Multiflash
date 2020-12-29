@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace JBlam.Multiflash
@@ -19,10 +21,17 @@ namespace JBlam.Multiflash
             if (Directory.Exists(tempName))
                 Directory.Delete(tempName, true);
             var dir = Directory.CreateDirectory(tempName);
-            System.IO.Compression.ZipFile.ExtractToDirectory(archivePath, tempName);
+            ZipFile.ExtractToDirectory(archivePath, tempName);
             var json = File.OpenRead(Path.Combine(dir.FullName, "set.json"));
-            var set = await System.Text.Json.JsonSerializer.DeserializeAsync<BinarySet>(json);
+            var set = await JsonSerializer.DeserializeAsync<BinarySet>(json);
             return (tempName, set);
+        }
+        public static async Task<BinarySet?> ReadSetAsync(string archivePath)
+        {
+            var stream = ZipFile.OpenRead(archivePath).GetEntry("set.json")?.Open();
+            return stream is null
+                ? null
+                : await JsonSerializer.DeserializeAsync<BinarySet>(stream);
         }
     }
 }

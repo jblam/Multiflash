@@ -9,10 +9,44 @@
     <Window.DataContext>
         <local:MultiflashViewModel />
     </Window.DataContext>
-    <DockPanel AllowDrop="True" DragEnter="DockPanel_DragEnter" Drop="DockPanel_Drop">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type local:InitViewModel}">
+            <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+                    DragEnter="DockPanel_DragEnter" Drop="DockPanel_Drop" AllowDrop="True"
+                    BorderBrush="Black" BorderThickness="3" CornerRadius="15"
+                    Margin="8"
+                    Background="AntiqueWhite">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Label>COM port:</Label>
+                        <local:ComPortSelector />
+                    </StackPanel>
+                    <Label>
+                        <TextBlock>
+                            <Run>Set: </Run>
+                            <Run Text="{Binding DroppedSet.Name, FallbackValue=(unset)}" />
+                        </TextBlock>
+                    </Label>
+                    <Button Command="{Binding ClearDroppedSet}">Clear</Button>
+                    <Button Command="{Binding StartTools}">Go</Button>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ProcessSetViewModel}">
+            <ItemsControl ItemsSource="{Binding Consoles}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <local:StreamingConsole />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+    </Window.Resources>
+    <ContentPresenter Content="{Binding CurrentViewModel}"></ContentPresenter>
+    <!--<DockPanel AllowDrop="True" DragEnter="DockPanel_DragEnter" Drop="DockPanel_Drop">
         <local:ComPortSelector DockPanel.Dock="Top" DataContext="{Binding ComPortSelector}" />
         <Button DockPanel.Dock="Top" Click="Button_Click">Go</Button>
         <Label Name="label1" FontFamily="Consolas">asfd</Label>
-        <local:StreamingConsole x:Name="console"></local:StreamingConsole>
-    </DockPanel>
+        <local:StreamingConsole x:Name="console" Background="BlanchedAlmond"></local:StreamingConsole>
+    </DockPanel>-->
 </Window>

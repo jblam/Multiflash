@@ -16,25 +16,19 @@ using System.Windows.Shapes;
 namespace JBlam.Multiflash
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for DropZone.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class DropZone : UserControl
     {
-        public MainWindow()
+        public DropZone()
         {
             InitializeComponent();
         }
 
-        private void DockPanel_DragEnter(object sender, DragEventArgs e)
+        public interface IDropZoneViewModel
         {
-            if (((MultiflashViewModel)DataContext).CurrentViewModel is InitViewModel vm)
-                vm.OnDragOver(e);
-        }
-
-        private void DockPanel_Drop(object sender, DragEventArgs e)
-        {
-            if (((MultiflashViewModel)DataContext).CurrentViewModel is InitViewModel vm)
-                vm.OnDrop(e);
+            DragDropEffects OnDragOver(DragEventArgs args);
+            DragDropEffects OnDrop(DragEventArgs args);
         }
     }
 }
