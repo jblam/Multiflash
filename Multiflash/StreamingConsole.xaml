@@ -11,7 +11,7 @@
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisible" />
     </UserControl.Resources>
-    <Expander>
+    <Expander IsExpanded="{Binding IsRunning, Mode=OneWay}">
         <Expander.HeaderTemplate>
             <DataTemplate>
                 <ContentPresenter Content="{TemplateBinding Content}" Loaded="ContentPresenter_Loaded" />

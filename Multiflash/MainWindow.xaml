@@ -33,20 +33,23 @@
             </Border>
         </DataTemplate>
         <DataTemplate DataType="{x:Type local:ProcessSetViewModel}">
-            <ItemsControl ItemsSource="{Binding Consoles}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <local:StreamingConsole />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <DockPanel>
+                <Label DockPanel.Dock="Top" FontSize="16">
+                    <TextBlock>
+                        <Run>Installing</Run>
+                        <Run Text="{Binding BinarySet.Name}" />
+                    </TextBlock>
+                </Label>
+                <Label DockPanel.Dock="Top" Content="{Binding BinarySet.Description}" />
+                <ItemsControl ItemsSource="{Binding Consoles}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:StreamingConsole />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </DockPanel>
         </DataTemplate>
     </Window.Resources>
-    <ContentPresenter Content="{Binding CurrentViewModel}"></ContentPresenter>
-    <!--<DockPanel AllowDrop="True" DragEnter="DockPanel_DragEnter" Drop="DockPanel_Drop">
-        <local:ComPortSelector DockPanel.Dock="Top" DataContext="{Binding ComPortSelector}" />
-        <Button DockPanel.Dock="Top" Click="Button_Click">Go</Button>
-        <Label Name="label1" FontFamily="Consolas">asfd</Label>
-        <local:StreamingConsole x:Name="console" Background="BlanchedAlmond"></local:StreamingConsole>
-    </DockPanel>-->
+    <ContentPresenter Content="{Binding CurrentViewModel}" />
 </Window>
