@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Multiflash.DemoTool": {
+      "commandName": "Project",
+      "commandLineArgs": "pos"
+    }
+  }
+}

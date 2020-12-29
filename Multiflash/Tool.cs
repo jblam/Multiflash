@@ -104,8 +104,10 @@ namespace JBlam.Multiflash
         public bool CanHandle(Binary binary) => true;
         public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
         {
-            var output = new ProcessStartInfo("cmd.exe");
-            output.Arguments = "/c DIR";
+            var output = new ProcessStartInfo(@"Multiflash.DemoTool.exe")
+            {
+                Arguments = @"\r"
+            };
             return output;
         }
     }

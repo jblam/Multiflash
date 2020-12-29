@@ -12,6 +12,14 @@ namespace JBlam.Multiflash
         ITool? GetToolForBinary(Binary binary);
     }
 
+    public class DummyToolset : IToolset
+    {
+        public ITool? GetToolForBinary(Binary binary)
+        {
+            return new DemoTool();
+        }
+    }
+
     public class ArduinoToolset : IToolset
     {
         static readonly string ExpectedProgramFilesRoot = Path.Combine(

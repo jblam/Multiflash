@@ -25,7 +25,7 @@ namespace JBlam.Multiflash
             InitializeComponent();
         }
 
-        readonly IToolset toolset = new ArduinoToolset();
+        readonly IToolset toolset = new DummyToolset();
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -39,21 +39,17 @@ namespace JBlam.Multiflash
         private async Task RunTool(Binary binary, string? workingDir = null)
         {
             var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
-            var s = tool.GetStartInfo(binary, "COM5");
+            var s = tool.GetStartInfo(binary, ((MultiflashViewModel)DataContext).ComPortSelector.SelectedPort ?? throw new InvalidOperationException("Couldn't get the port"));
             s.RedirectStandardOutput = true;
             s.RedirectStandardError = true;
             s.RedirectStandardInput = true;
             s.CreateNoWindow = true;
             s.WorkingDirectory = workingDir ?? s.WorkingDirectory;
             var p = System.Diagnostics.Process.Start(s) ?? throw new InvalidOperationException("Couldn't get a process");
+            var vm = new StreamingConsoleViewModel(p);
+            console.DataContext = vm;
             await p.WaitForExitAsync();
-            label1.Content = $@"Finished with exit code: {p.ExitCode}
-
-Output:
-{await p.StandardOutput.ReadToEndAsync()}
-
-Error:
-{await p.StandardError.ReadToEndAsync()}";
+            label1.Content = $@"Finished with exit code: {p.ExitCode}";
         }
 
         private void DockPanel_DragEnter(object sender, DragEventArgs e)
