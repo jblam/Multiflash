@@ -38,6 +38,7 @@ namespace JBlam.Multiflash
             {
                 throw new InvalidOperationException("Process failed to start");
             }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
             return Process;
         }
 
@@ -82,6 +83,7 @@ namespace JBlam.Multiflash
         public int? ExitCode => Process is not null && Process.HasExited ? Process.ExitCode : null;
         public bool? IsSuccess => ExitCode.HasValue ? ExitCode == expectedExitCode : null;
         public bool IsRunning => !Process?.HasExited ?? false;
+        public bool IsStarted => Process is not null;
 
         public Binary Binary { get; }
 
