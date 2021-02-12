@@ -19,7 +19,9 @@ namespace JBlam.Multiflash
                 throw new ArgumentNullException(nameof(toolset));
             RefreshPorts = Command.Create(() =>
             {
-                SerialPort.GetPortNames();
+                Ports = SerialPort.GetPortNames();
+                if (!Ports.Contains(SelectedPort))
+                    SelectedPort = null;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Ports)));
             });
             ClearDroppedSet = Command.Create(() => DroppedSet = null);
