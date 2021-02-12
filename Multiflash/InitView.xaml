@@ -1,0 +1,44 @@
+﻿<UserControl x:Class="JBlam.Multiflash.InitView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:JBlam.Multiflash" xmlns:helpers="clr-namespace:JBlam.Multiflash.Helpers"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=local:InitViewModel}">
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="DefaultBorder">Black</SolidColorBrush>
+        <SolidColorBrush x:Key="InvalidBorder">Red</SolidColorBrush>
+        <SolidColorBrush x:Key="ValidBorder">Green</SolidColorBrush>
+        <helpers:ConditionalValueConverter
+            x:Key="BorderColour"
+            NullValue="{StaticResource DefaultBorder}"
+            TrueValue="{StaticResource ValidBorder}"
+            FalseValue="{StaticResource InvalidBorder}" />
+    </UserControl.Resources>
+    <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+            DragEnter="DockPanel_DragEnter"
+            DragOver="Border_DragOver"
+            Drop="DockPanel_Drop"
+            DragLeave="Border_DragLeave"
+            AllowDrop="True"
+            BorderBrush="{Binding IsDragDropValid, Converter={StaticResource BorderColour}}" BorderThickness="3" CornerRadius="15"
+            Margin="8"
+            Background="AntiqueWhite">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal">
+                <Label>COM port:</Label>
+                <local:ComPortSelector />
+            </StackPanel>
+            <Label>
+                <TextBlock>
+                    <Run>Set: </Run>
+                    <Run Text="{Binding DroppedSet.Name, FallbackValue=(unset)}" />
+                </TextBlock>
+            </Label>
+            <Button Command="{Binding ClearDroppedSet}">Clear</Button>
+            <Button Command="{Binding StartTools}">Go</Button>
+        </StackPanel>
+    </Border>
+</UserControl>

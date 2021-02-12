@@ -24,7 +24,7 @@ namespace JBlam.Multiflash
                     SelectedPort = null;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Ports)));
             });
-            ClearDroppedSet = Command.Create(() => DroppedSet = null);
+            ClearDroppedSet = Command.Create(() => DroppedSet = null, () => DroppedSet != null);
             StartTools = Command.Create(() =>
             {
                 NextViewModel = new ProcessSetViewModel(toolset);
@@ -34,6 +34,7 @@ namespace JBlam.Multiflash
             Ports = SerialPort.GetPortNames();
         }
 
+        private bool? isDragDropValid;
         private string? selectedPort;
         private BinarySet? droppedSet;
         private string? droppedPath;
@@ -74,12 +75,32 @@ namespace JBlam.Multiflash
             }
         }
 
+        public bool? IsDragDropValid
+        {
+            get => isDragDropValid; private set
+            {
+                isDragDropValid = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDragDropValid)));
+            }
+        }
+
+        public void OnDragEnter(DragEventArgs args)
+        {
+            IsDragDropValid = args.Data.GetDataPresent(DataFormats.FileDrop);
+        }
+
         public void OnDragOver(DragEventArgs args)
         {
             args.Effects = args.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+            args.Handled = true;
+        }
+        public void OnDragLeave(DragEventArgs args)
+        {
+            IsDragDropValid = null;
         }
         public async void OnDrop(DragEventArgs args)
         {
+            IsDragDropValid = null;
             var data = args.Data.GetData(DataFormats.FileDrop);
             if (data is not string[] paths)
             {

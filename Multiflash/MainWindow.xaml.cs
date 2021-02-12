@@ -24,17 +24,5 @@ namespace JBlam.Multiflash
         {
             InitializeComponent();
         }
-
-        private void DockPanel_DragEnter(object sender, DragEventArgs e)
-        {
-            if (((MultiflashViewModel)DataContext).CurrentViewModel is InitViewModel vm)
-                vm.OnDragOver(e);
-        }
-
-        private void DockPanel_Drop(object sender, DragEventArgs e)
-        {
-            if (((MultiflashViewModel)DataContext).CurrentViewModel is InitViewModel vm)
-                vm.OnDrop(e);
-        }
     }
 }
