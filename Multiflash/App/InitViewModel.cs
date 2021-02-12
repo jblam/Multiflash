@@ -24,24 +24,26 @@ namespace JBlam.Multiflash.App
                     SelectedPort = null;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Ports)));
             });
-            ClearDroppedSet = Command.Create(() => DroppedSet = null, () => DroppedSet != null);
             StartTools = Command.Create(() =>
             {
                 NextViewModel = new ProcessSetViewModel(toolset);
                 // TODO: actually extract the contents
-                _ = NextViewModel.SetBinaries(DroppedSet!, SelectedPort!);
-            }, () => SelectedPort != null && droppedPath != null && DroppedSet != null);
+                _ = NextViewModel.SetBinaries(BinarySetViewModel.ExtractedSet!, SelectedPort!);
+            }, () => SelectedPort != null && (BinarySetViewModel.BinarySetTask?.IsCompletedSuccessfully ?? false));
+            BinarySetViewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.IsFor(nameof(BinarySetViewModel.EffectiveViewModel)))
+                    StartTools.RaiseCanExecuteChanged();
+            };
             Ports = SerialPort.GetPortNames();
         }
 
         private bool? isDragDropValid;
         private string? selectedPort;
-        private BinarySet? droppedSet;
-        private string? droppedPath;
         private ProcessSetViewModel? nextViewModel;
 
+        public BinarySetViewModel BinarySetViewModel { get; } = new BinarySetViewModel();
         public ICommand RefreshPorts { get; }
-        public ICommand ClearDroppedSet { get; }
         public ICommand StartTools { get; }
         public IReadOnlyCollection<string> Ports { get; private set; }
         public string? SelectedPort
@@ -51,17 +53,6 @@ namespace JBlam.Multiflash.App
             {
                 selectedPort = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPort)));
-                StartTools.RaiseCanExecuteChanged();
-            }
-        }
-        public BinarySet? DroppedSet
-        {
-            get => droppedSet;
-            private set
-            {
-                droppedSet = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DroppedSet)));
-                ClearDroppedSet.RaiseCanExecuteChanged();
                 StartTools.RaiseCanExecuteChanged();
             }
         }
@@ -98,7 +89,7 @@ namespace JBlam.Multiflash.App
         {
             IsDragDropValid = null;
         }
-        public async void OnDrop(DragEventArgs args)
+        public void OnDrop(DragEventArgs args)
         {
             IsDragDropValid = null;
             var data = args.Data.GetData(DataFormats.FileDrop);
@@ -110,8 +101,7 @@ namespace JBlam.Multiflash.App
             {
                 throw new NotSupportedException("Multiple files not supported");
             }
-            droppedPath = paths[0];
-            DroppedSet = await BinarySet.ReadSetAsync(droppedPath);
+            BinarySetViewModel.BinarySetPath = paths[0];
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

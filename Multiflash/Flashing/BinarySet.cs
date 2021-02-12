@@ -26,12 +26,35 @@ namespace JBlam.Multiflash
             var set = await JsonSerializer.DeserializeAsync<BinarySet>(json);
             return (tempName, set);
         }
-        public static async Task<BinarySet?> ReadSetAsync(string archivePath)
+        public static async Task<BinarySet> ReadSetAsync(string archivePath)
         {
-            var stream = ZipFile.OpenRead(archivePath).GetEntry("set.json")?.Open();
-            return stream is null
-                ? null
-                : await JsonSerializer.DeserializeAsync<BinarySet>(stream);
+            Stream zipStream;
+            try
+            {
+                zipStream = ZipFile.OpenRead(archivePath).GetEntry("set.json")?.Open()!;
+            }
+            catch (Exception e)
+            {
+                throw new ZipFileException("Error opening path as Zip file", e);
+            }
+            if (zipStream is null)
+            {
+                throw new ZipFileException("Zip file did not contain the expected set.json file");
+            }
+            var maybeSet = await JsonSerializer.DeserializeAsync<BinarySet>(zipStream);
+            return maybeSet ?? throw new ArgumentException("The Zip archive content could not be read.");
         }
+    }
+
+
+    [Serializable]
+    public class ZipFileException : Exception
+    {
+        public ZipFileException() { }
+        public ZipFileException(string message) : base(message) { }
+        public ZipFileException(string message, Exception inner) : base(message, inner) { }
+        protected ZipFileException(
+          System.Runtime.Serialization.SerializationInfo info,
+          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 }
