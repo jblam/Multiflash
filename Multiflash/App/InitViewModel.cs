@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-namespace JBlam.Multiflash
+namespace JBlam.Multiflash.App
 {
     class InitViewModel : INotifyPropertyChanged
     {

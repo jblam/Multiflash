@@ -15,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace JBlam.Multiflash
+namespace JBlam.Multiflash.App
 {
     /// <summary>
     /// Interaction logic for StreamingConsole.xaml

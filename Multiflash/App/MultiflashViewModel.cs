@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace JBlam.Multiflash
+namespace JBlam.Multiflash.App
 {
     class MultiflashViewModel : INotifyPropertyChanged
     {
