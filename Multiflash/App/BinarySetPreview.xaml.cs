@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace JBlam.Multiflash
+namespace JBlam.Multiflash.App
 {
     /// <summary>
-    /// Interaction logic for ComPortSelector.xaml
+    /// Interaction logic for BinarySetPreview.xaml
     /// </summary>
-    public partial class ComPortSelector : UserControl
+    public partial class BinarySetPreview : UserControl
     {
-        public ComPortSelector()
+        public BinarySetPreview()
         {
             InitializeComponent();
         }
