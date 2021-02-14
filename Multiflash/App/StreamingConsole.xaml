@@ -37,7 +37,7 @@
                 <ProgressBar IsIndeterminate="True" Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisible}, FallbackValue=Collapsed}" />
             </StackPanel>
         </Expander.Header>
-        <Label DockPanel.Dock="Bottom" FontFamily="Consolas">
+        <Label DockPanel.Dock="Bottom" FontFamily="Consolas" Margin="8" Background="#ddd">
             <ItemsControl ItemsSource="{Binding Output}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
