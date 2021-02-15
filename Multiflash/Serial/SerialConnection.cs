@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Ports;
 using System.Linq;
@@ -15,11 +16,13 @@ namespace JBlam.Multiflash.Serial
 {
     class SerialConnection : IDisposable
     {
-        public static SerialConnection Open(string comPort, int baud, CancellationToken token = default)
+        public static SerialConnection Open(string comPort, int baud, CancellationToken token = default) =>
+            Open(comPort, baud, Encoding.UTF8, token);
+        public static SerialConnection Open(string comPort, int baud, Encoding encoding, CancellationToken token = default)
         {
-            var port = new SerialPort(comPort)
+            var port = new SerialPort(comPort, baud)
             {
-                BaudRate = baud
+                Encoding = encoding,
             };
             port.Open();
             return new SerialConnection(port, token);
@@ -28,55 +31,32 @@ namespace JBlam.Multiflash.Serial
         {
             this.port = port;
             this.token = token;
-            var reader = new StreamReader(port.BaseStream, Encoding.UTF8);
-            completion = ConsumeAsync(reader, Output, token);
+            port.DataReceived += Port_DataReceived;
         }
 
-        static async ValueTask<int?> SafeReadAsync(TextReader reader, Memory<char> memory, CancellationToken token)
+        private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            try
+            if (e.EventType == SerialData.Chars)
             {
-                return await reader.ReadAsync(memory, token);
-            }
-            catch (TaskCanceledException)
-            {
-                return null;
-            }
-        }
-        internal static async Task ConsumeAsync(TextReader reader, IList<string> fullLines, CancellationToken token)
-        {
-            var buffer = new char[1024].AsMemory();
-            // on serial ports, reader.EndOfStream will never be true
-            while (!token.IsCancellationRequested)
-            {
-                var length = await SafeReadAsync(reader, buffer, token).ConfigureAwait(false);
-                if (!length.HasValue)
-                    break;
-                var section = buffer[..length.Value];
-                while (section.Length > 0)
+                var data = port.ReadExisting().AsSpan();
+                while (data.Length > 0)
                 {
-                    var nextNewline = section.Span.IndexOf('\n');
-                    var hasNewline = nextNewline >= 0;
-                    var end = hasNewline ? nextNewline + 1 : section.Length;
-                    var substring = section[0..end];
-                    section = section[end..];
-                    string yieldLine;
-                    if (fullLines.Count == 0 || fullLines[^1].EndsWith('\n'))
+                    var message = Message.ConsumeIncoming(ref data, sw.Elapsed);
+                    var previous = Output.Count > 0 ? Output[^1] : new Message { IsTerminated = true };
+                    var combined = previous.TryCombine(message);
+                    if (combined.HasValue)
                     {
-                        yieldLine = substring.ToString();
-                        fullLines.Add(yieldLine);
+                        Output[^1] = combined.Value;
                     }
                     else
                     {
-                        yieldLine = fullLines[^1] + substring;
-                        fullLines[^1] = yieldLine;
+                        Output.Add(message);
                     }
                 }
-                await Task.Yield();
             }
         }
 
-        readonly Task completion;
+        readonly Stopwatch sw = Stopwatch.StartNew();
         readonly CancellationToken token;
         readonly SerialPort port;
         private bool disposedValue;
@@ -85,10 +65,11 @@ namespace JBlam.Multiflash.Serial
         /// Gets an observable collection of the output in lines, including incomplete
         /// lines.
         /// </summary>
-        public ObservableCollection<string> Output { get; } = new();
+        public ObservableCollection<Message> Output { get; } = new();
 
         public Task<string> Prompt(string input, bool waitForCompleteLine = false)
         {
+            Output.Add(Message.CreateOutgoing(input, sw.Elapsed));
             var output = new TaskCompletionSource<string>();
             void h(object? sender, NotifyCollectionChangedEventArgs e)
             {
@@ -98,16 +79,18 @@ namespace JBlam.Multiflash.Serial
                     case NotifyCollectionChangedAction.Replace:
                         if (e.NewStartingIndex == Output.Count - 1)
                         {
-                            if (Output[^1].EndsWith('\n') || !waitForCompleteLine)
-                            {
-                                output.SetResult(Output[^1]);
-                                Output.CollectionChanged -= h;
-                            }
+                            var message = Output[^1];
+                            if (message.Direction != MessageDirection.FromRemote)
+                                return;
+                            if (waitForCompleteLine && !message.IsTerminated)
+                                return;
+                            output.SetResult(Output[^1].Content);
+                            Output.CollectionChanged -= h;
                         }
                         else
                         {
                             Output.CollectionChanged -= h;
-                            output.SetException(new InvalidOperationException("Serial response collection was mutated in an unexpected way"));
+                            output.SetException(new InvalidOperationException("Serial response collection was mutated at an unexpected index"));
                         }
                         break;
                     default:
