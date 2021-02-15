@@ -43,23 +43,21 @@ namespace JBlam.Multiflash.Tests
         }
 
         [TestMethod]
-        public async Task CanYieldReturnLines()
+        public async Task CanCaptureOutput()
         {
             var reader = new DebugReader();
             var list = new List<string>();
 
             CancellationTokenSource cancellationTokenSource = new();
 
-            var e = Serial.SerialConnection.ConsumeAsync(reader, list, cancellationTokenSource.Token);
+            _ = Serial.SerialConnection.ConsumeAsync(reader, list, cancellationTokenSource.Token);
             await Task.Yield();
             reader.Add("Line one\n");
             reader.Add("Line ");
             reader.Add("two\n");
-            cancellationTokenSource.CancelAfter(10);
-            var result = await e.ToListAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+            cancellationTokenSource.CancelAfter(20);
             var expected = new[] { "Line one\n", "Line two\n" };
             CollectionAssert.AreEqual(expected, list);
-            CollectionAssert.AreEqual(expected, result);
         }
 
         [TestMethod]
@@ -67,7 +65,7 @@ namespace JBlam.Multiflash.Tests
         {
             var reader = new DebugReader();
             var list = new List<string>();
-            _ = Serial.SerialConnection.ConsumeAsync(reader, list, default).LastAsync().AsTask();
+            _ = Serial.SerialConnection.ConsumeAsync(reader, list, default);
             await Task.Yield();
             reader.Add("Line one\n");
             reader.Add("Line ");
@@ -76,15 +74,14 @@ namespace JBlam.Multiflash.Tests
             Assert.AreEqual("Line ", list[1]);
         }
 
-        [TestMethod, Timeout(8000)]
+        [TestMethod, Timeout(8000), Ignore("Requires real device")]
         public async Task ListensOnSerial()
         {
             using var c = Serial.SerialConnection.Open("COM4", 115200);
-            c.EnumeratorCancellationSource.CancelAfter(TimeSpan.FromSeconds(1));
-            var mac = await c.Lines.FirstAsync(c => c.StartsWith("Hub"), c.EnumeratorCancellationSource.Token);
-            const string expected = "24-62-AB-E4-0F-48";
-            Assert.AreEqual(expected, mac.Split(new[] { ' ', '\r', '\n' })[1]);
-            
+            await Task.Delay(1000);
+            var output = await c.Prompt("?", true);
+            await Task.Delay(1000);
+            Assert.AreEqual("", output);
         }
     }
 }
