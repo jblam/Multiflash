@@ -6,12 +6,13 @@ using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace JBlam.Multiflash.Serial
 {
-    class SerialConnection
+    class SerialConnection : IDisposable
     {
         public static SerialConnection Open(string comPort, int baud)
         {
@@ -28,31 +29,25 @@ namespace JBlam.Multiflash.Serial
             var reader = new StreamReader(port.BaseStream, Encoding.UTF8);
             Lines = ConsumeAsync(reader, Output, EnumeratorCancellationSource.Token);
         }
-        internal static async Task<int?> TryReadAsync(StreamReader reader, Memory<char> buffer, CancellationToken token)
+
+        static async ValueTask<int?> SafeReadAsync(TextReader reader, Memory<char> memory, CancellationToken token)
         {
-            if (token.IsCancellationRequested)
-                return null;
             try
             {
-                return await reader.ReadAsync(buffer, token);
-            }
-            catch (ObjectDisposedException)
-            {
-                return null;
+                return await reader.ReadAsync(memory, token);
             }
             catch (TaskCanceledException)
             {
                 return null;
             }
         }
-        internal static async IAsyncEnumerable<string> ConsumeAsync(StreamReader reader, IList<string> fullLines, [EnumeratorCancellation]CancellationToken token)
+        internal static async IAsyncEnumerable<string> ConsumeAsync(TextReader reader, IList<string> fullLines, [EnumeratorCancellation]CancellationToken token)
         {
             var buffer = new char[1024].AsMemory();
-            // TODO: how to detect end of stream then?
-            while (true)
+            // on serial ports, reader.EndOfStream will never be true
+            while (!token.IsCancellationRequested)
             {
-                await Task.Yield();
-                var length = await TryReadAsync(reader, buffer, token).ConfigureAwait(false);
+                var length = await SafeReadAsync(reader, buffer, token).ConfigureAwait(false);
                 if (!length.HasValue)
                     yield break;
                 var section = buffer[..length.Value];
@@ -79,10 +74,12 @@ namespace JBlam.Multiflash.Serial
                         yield return yieldLine;
                     }
                 }
+                await Task.Yield();
             }
         }
 
         readonly SerialPort port;
+        private bool disposedValue;
 
         public IAsyncEnumerable<string> Lines { get; }
 
@@ -93,5 +90,23 @@ namespace JBlam.Multiflash.Serial
         public ObservableCollection<string> Output { get; } = new();
         public CancellationTokenSource EnumeratorCancellationSource { get; } = new();
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    port.Dispose();
+                    EnumeratorCancellationSource.Cancel();
+                }
+                disposedValue = true;
+            }
+        }
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
