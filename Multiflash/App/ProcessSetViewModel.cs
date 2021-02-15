@@ -1,19 +1,29 @@
-﻿using System;
+﻿using JBlam.Multiflash.Helpers;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace JBlam.Multiflash.App
 {
-    class ProcessSetViewModel
+    class ProcessSetViewModel : IContinuableViewModel<ConfigurationViewModel>, INotifyPropertyChanged
     {
         private readonly IToolset toolset;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public ProcessSetViewModel(IToolset toolset)
         {
             this.toolset = toolset ?? throw new ArgumentNullException(nameof(toolset));
+            Next = Command.Create(() =>
+            {
+                NextViewModel = new ConfigurationViewModel();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NextViewModel)));
+            }, () => Consoles.All(c => c.IsSuccess == true));
         }
 
         public BinarySet? BinarySet { get; private set; }
@@ -39,6 +49,11 @@ namespace JBlam.Multiflash.App
             {
                 await vm.Start().WaitForExitAsync();
             }
+            Next.RaiseCanExecuteChanged();
         }
+
+        public ICommand Next { get; }
+
+        public ConfigurationViewModel? NextViewModel { get; private set; }
     }
 }

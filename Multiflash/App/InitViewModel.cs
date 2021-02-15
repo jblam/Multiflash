@@ -11,7 +11,7 @@ using System.Windows.Input;
 
 namespace JBlam.Multiflash.App
 {
-    class InitViewModel : INotifyPropertyChanged
+    class InitViewModel : IContinuableViewModel<ProcessSetViewModel>, INotifyPropertyChanged
     {
         public InitViewModel(IToolset toolset)
         {
