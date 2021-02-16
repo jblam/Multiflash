@@ -22,6 +22,10 @@
                     </TextBlock>
                 </Label>
                 <Label DockPanel.Dock="Top" Content="{Binding BinarySet.Description}" />
+                <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right"
+                        Margin="16"
+                        Padding="8 4"
+                        Command="{Binding Next}">Next</Button>
                 <ItemsControl ItemsSource="{Binding Consoles}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -30,6 +34,21 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </DockPanel>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ConfigurationViewModel}">
+            <ScrollViewer DockPanel.Dock="Bottom" FontFamily="Consolas" Margin="8" Padding="8" Background="#ddd">
+                <ItemsControl ItemsSource="{Binding SerialContent}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Run Text="{Binding StartedAt.TotalSeconds, StringFormat='00.###', Mode=OneTime}" />
+                                <Run Text="{Binding Direction, Mode=OneTime}" />
+                                <Run Text="{Binding Content, Mode=OneTime}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
         </DataTemplate>
     </Window.Resources>
     <ContentPresenter Content="{Binding CurrentViewModel}" />

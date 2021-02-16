@@ -13,6 +13,7 @@ namespace JBlam.Multiflash.App
     class ProcessSetViewModel : IContinuableViewModel<ConfigurationViewModel>, INotifyPropertyChanged
     {
         private readonly IToolset toolset;
+        private string comPort;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -21,7 +22,7 @@ namespace JBlam.Multiflash.App
             this.toolset = toolset ?? throw new ArgumentNullException(nameof(toolset));
             Next = Command.Create(() =>
             {
-                NextViewModel = new ConfigurationViewModel();
+                NextViewModel = new ConfigurationViewModel(comPort);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NextViewModel)));
             }, () => Consoles.All(c => c.IsSuccess == true));
         }
@@ -34,6 +35,7 @@ namespace JBlam.Multiflash.App
             if (BinarySet != null)
                 throw new InvalidOperationException("Binaries have already been set");
             BinarySet = binarySet ?? throw new ArgumentNullException(nameof(binarySet));
+            this.comPort = comPort;
             Consoles = BinarySet.Binaries.Select(binary =>
             {
                 var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");

@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace JBlam.Multiflash.Serial
 {
@@ -31,6 +32,7 @@ namespace JBlam.Multiflash.Serial
         {
             this.port = port;
             this.token = token;
+            observationDispatcher = Dispatcher.CurrentDispatcher;
             port.DataReceived += Port_DataReceived;
         }
 
@@ -38,24 +40,29 @@ namespace JBlam.Multiflash.Serial
         {
             if (e.EventType == SerialData.Chars)
             {
-                var data = port.ReadExisting().AsSpan();
-                while (data.Length > 0)
+                var portString = port.ReadExisting();
+                observationDispatcher.Invoke(() =>
                 {
-                    var message = Message.ConsumeIncoming(ref data, sw.Elapsed);
-                    var previous = Output.Count > 0 ? Output[^1] : new Message { IsTerminated = true };
-                    var combined = previous.TryCombine(message);
-                    if (combined.HasValue)
+                    var data = portString.AsSpan();
+                    while (data.Length > 0)
                     {
-                        Output[^1] = combined.Value;
+                        var message = Message.ConsumeIncoming(ref data, sw.Elapsed);
+                        var previous = Output.Count > 0 ? Output[^1] : new Message { IsTerminated = true };
+                        var combined = previous.TryCombine(message);
+                        if (combined.HasValue)
+                        {
+                            Output[^1] = combined.Value;
+                        }
+                        else
+                        {
+                            Output.Add(message);
+                        }
                     }
-                    else
-                    {
-                        Output.Add(message);
-                    }
-                }
+                });
             }
         }
 
+        readonly Dispatcher observationDispatcher;
         readonly Stopwatch sw = Stopwatch.StartNew();
         readonly CancellationToken token;
         readonly SerialPort port;
