@@ -22,7 +22,7 @@ namespace JBlam.Multiflash.App
             this.toolset = toolset ?? throw new ArgumentNullException(nameof(toolset));
             Next = Command.Create(() =>
             {
-                NextViewModel = new ConfigurationViewModel(comPort!);
+                NextViewModel = new ConfigurationViewModel(BinarySet!, comPort!);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NextViewModel)));
             }, () => Consoles.All(c => c.IsSuccess == true) && comPort != null);
         }

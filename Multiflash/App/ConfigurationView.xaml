@@ -4,14 +4,26 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:JBlam.Multiflash.App"
+             xmlns:config="clr-namespace:JBlam.Multiflash.App.ConfigItems"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance Type=local:ConfigurationViewModel}">
     <DockPanel>
-        <DockPanel DockPanel.Dock="Top" Margin="8">
-            <Button Command="{Binding GetStatus}" Padding="16 2">Preamble</Button>
-            <Label Content="{Binding StatusValue}"></Label>
-        </DockPanel>
+        
+        <ItemsControl ItemsSource="{Binding Verifications}" DockPanel.Dock="Top">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <config:VerificationView Margin="8 2" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <ItemsControl ItemsSource="{Binding Parameters}" DockPanel.Dock="Top">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <config:ParameterView Margin="8 2" />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
         <ScrollViewer DockPanel.Dock="Bottom" FontFamily="Consolas" Margin="8" Padding="8" Background="#ddd" Name="SerialItemsScroller">
             <ItemsControl ItemsSource="{Binding SerialContent}" Name="SerialItems">
                 <ItemsControl.ItemTemplate>

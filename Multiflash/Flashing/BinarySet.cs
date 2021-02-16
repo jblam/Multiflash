@@ -14,6 +14,8 @@ namespace JBlam.Multiflash
         public IReadOnlyCollection<Binary> Binaries { get; init; } = Array.Empty<Binary>();
         public string Name { get; init; } = string.Empty;
         public string Description { get; init; } = string.Empty;
+        public IReadOnlyCollection<Verification> Verifications { get; init; } = new[] { new Verification("?", "Status", "Gets the runtime status of the device") };
+        public IReadOnlyCollection<Parameter> Parameters { get; init; } = new[] { new Parameter("PARAMETER-SSID", "SSID", "The WiFi network SSID") };
 
         public static async Task<(string extractLocation, BinarySet? contents)> Extract(string archivePath)
         {

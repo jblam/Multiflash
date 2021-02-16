@@ -1,4 +1,5 @@
-﻿using JBlam.Multiflash.Helpers;
+﻿using JBlam.Multiflash.App.ConfigItems;
+using JBlam.Multiflash.Helpers;
 using JBlam.Multiflash.Serial;
 using System;
 using System.Collections.Generic;
@@ -13,15 +14,20 @@ namespace JBlam.Multiflash.App
 {
     class ConfigurationViewModel : INotifyPropertyChanged
     {
-        public ConfigurationViewModel(string comPort)
+        public ConfigurationViewModel(BinarySet binarySet, string comPort)
         {
             Connection = SerialConnection.Open(comPort, 115200);
             GetStatus = Command.Create(async () => StatusValue = await Connection.Prompt("?", true));
+            Verifications = binarySet.Verifications.Select(v => new VerificationViewModel(v, Connection)).ToList();
+            Parameters = binarySet.Parameters.Select(p => new ParameterViewModel(p)).ToList();
         }
 
         string? statusValue;
 
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        public IReadOnlyCollection<VerificationViewModel> Verifications { get; }
+        public IReadOnlyCollection<ParameterViewModel> Parameters { get; }
 
         SerialConnection Connection { get; }
         public ICommand GetStatus { get; }
