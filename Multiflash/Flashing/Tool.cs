@@ -61,6 +61,11 @@ namespace JBlam.Multiflash
     {
         private readonly string pythonPath;
         private readonly string uploadScriptPath;
+        private static readonly IReadOnlyCollection<string> validTargetPlatforms = new[]
+        {
+            "esp8266",
+            "esp32"
+        };
 
         public EspUploaderPyTool(string pythonPath, string uploadScriptPath)
         {
@@ -77,7 +82,26 @@ namespace JBlam.Multiflash
             this.pythonPath = pythonPath;
             this.uploadScriptPath = uploadScriptPath;
         }
-        public bool CanHandle(Binary binary) => binary.Format == BinaryFormat.Bin;
+        public bool CanHandle(Binary binary) => binary.Format == BinaryFormat.Bin
+            && binary.TargetPlatform is string platform
+            && validTargetPlatforms.Contains(platform.ToLowerInvariant());
+
+
+        /* Sensor, ESP32, PIO build
+         * ".platformio\penv\scripts\python.exe" ".platformio\packages\tool-esptoolpy\esptool.py" --chip esp32 --port "COM4" --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 .platformio\packages\framework-arduinoespressif32\tools\sdk\bin\bootloader_dio_40m.bin 
+0x8000 "partitions.bin" 0xe000 .platformio\packages\framework-arduinoespressif32\tools\partitions\boot_app0.bin 0x10000 firmware.bin
+         */
+
+        /* Hub application, ESP32, PIO build
+         * ".platformio\penv\scripts\python.exe" ".platformio\packages\tool-esptoolpy\esptool.py" --chip esp32 --port "COM4" --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 .platformio\packages\framework-arduinoespressif32\tools\sdk\bin\bootloader_dio_40m.bin 
+0x8000 "partitions.bin" 0xe000 .platformio\packages\framework-arduinoespressif32\tools\partitions\boot_app0.bin 0x10000 firmware.bin
+        */
+
+        /* Hub filesystem, ESP32, PIO build
+         * ".platformio\penv\scripts\python.exe" ".platformio\packages\tool-esptoolpy\esptool.py" --chip esp32 --port "COM4" --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_size detect 
+2686976 spiffs.bin
+        */
+
         public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
         {
             return new ProcessStartInfo(pythonPath)
@@ -86,7 +110,7 @@ namespace JBlam.Multiflash
                 {
                     uploadScriptPath,
                     "--chip",
-                    "esp8266",
+                    binary.TargetPlatform!.ToLowerInvariant(),
                     "--port",
                     comPort,
                     "--baud",

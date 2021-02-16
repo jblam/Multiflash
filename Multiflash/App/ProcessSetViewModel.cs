@@ -36,17 +36,25 @@ namespace JBlam.Multiflash.App
                 throw new InvalidOperationException("Binaries have already been set");
             BinarySet = binarySet ?? throw new ArgumentNullException(nameof(binarySet));
             this.comPort = comPort;
-            Consoles = BinarySet.Binaries.Select(binary =>
+            var plan = toolset.GetPlan(BinarySet);
+            if (plan.IsSuccess(out var details))
             {
-                var tool = toolset.GetToolForBinary(binary) ?? throw new InvalidOperationException("Couldn't get a tool");
-                var s = tool.GetStartInfo(binary, comPort ?? throw new InvalidOperationException("Couldn't get the port"));
-                s.RedirectStandardOutput = true;
-                s.RedirectStandardError = true;
-                s.RedirectStandardInput = true;
-                s.CreateNoWindow = true;
-                s.WorkingDirectory = workingDir ?? s.WorkingDirectory;
-                return new StreamingConsoleViewModel(binary, s);
-            }).ToList();
+                Consoles = details.Select(part =>
+                {
+                    var s = part.Item1.GetStartInfo(part.Item2, comPort ?? throw new InvalidOperationException("Couldn't get the port"));
+                    s.RedirectStandardOutput = true;
+                    s.RedirectStandardError = true;
+                    s.RedirectStandardInput = true;
+                    s.CreateNoWindow = true;
+                    s.WorkingDirectory = workingDir ?? s.WorkingDirectory;
+                    // TODO: title here.
+                    return new StreamingConsoleViewModel(part.Item2.First(), s);
+                }).ToList();
+            }
+            else
+            {
+                throw new InvalidOperationException($"Couldn't get a tool for binary {plan.UnflashableBinary?.Path ?? "(unknown)"}");
+            }
             foreach (var vm in Consoles)
             {
                 await vm.Start().WaitForExitAsync();

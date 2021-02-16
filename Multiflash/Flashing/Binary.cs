@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace JBlam.Multiflash
 {
-    public record Binary(string Path)
+    public record Binary(string Path, string? TargetPlatform)
     {
         public BinaryFormat Format => System.IO.Path.GetExtension(Path).ToLowerInvariant() switch
         {
