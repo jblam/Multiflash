@@ -9,15 +9,15 @@
              d:DesignHeight="36" d:DesignWidth="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="84" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Button Command="{Binding Send}" Content="{Binding Verification.Label, Mode=OneTime}" Padding="8 2" />
-        <TextBox Text="{Binding Response, Mode=OneWay}" IsReadOnly="True" Grid.Column="1" />
+        <Button Command="{Binding Send}" Content="{Binding Verification.Label, Mode=OneTime}" Padding="8 2" Margin="0 0 8 0" />
+        <TextBox Text="{Binding Response, Mode=OneWay}" IsReadOnly="True" VerticalContentAlignment="Center" Grid.Column="1" />
         <TextBlock FontSize="10" Text="{Binding Verification.Description, Mode=OneTime}" Grid.Column="1" Grid.Row="1" />
     </Grid>
 </UserControl>

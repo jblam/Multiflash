@@ -7,9 +7,17 @@
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=local:ParameterViewModel}"
              d:DesignHeight="36" d:DesignWidth="800">
-    <DockPanel>
-        <Label Content="{Binding Parameter.Label}" DockPanel.Dock="Left" />
-        <Label Content="{Binding Parameter.Description}" DockPanel.Dock="Bottom" />
-        <TextBox Text="{Binding Value}" />
-    </DockPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="84" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Label Content="{Binding Parameter.Label}" Margin="0 0 8 0" />
+        <TextBox Text="{Binding Value}" Grid.Column="1" VerticalContentAlignment="Center" />
+        <TextBlock FontSize="10" Text="{Binding Parameter.Description, Mode=OneTime}" Grid.Row="1" Grid.Column="1" />
+    </Grid>
 </UserControl>
