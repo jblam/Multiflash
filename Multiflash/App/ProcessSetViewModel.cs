@@ -13,7 +13,7 @@ namespace JBlam.Multiflash.App
     class ProcessSetViewModel : IContinuableViewModel<ConfigurationViewModel>, INotifyPropertyChanged
     {
         private readonly IToolset toolset;
-        private string comPort;
+        private string? comPort;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -22,9 +22,9 @@ namespace JBlam.Multiflash.App
             this.toolset = toolset ?? throw new ArgumentNullException(nameof(toolset));
             Next = Command.Create(() =>
             {
-                NextViewModel = new ConfigurationViewModel(comPort);
+                NextViewModel = new ConfigurationViewModel(comPort!);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(NextViewModel)));
-            }, () => Consoles.All(c => c.IsSuccess == true));
+            }, () => Consoles.All(c => c.IsSuccess == true) && comPort != null);
         }
 
         public BinarySet? BinarySet { get; private set; }
