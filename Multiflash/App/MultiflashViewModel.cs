@@ -15,7 +15,7 @@ namespace JBlam.Multiflash.App
         {
             InitViewModel = new(toolset);
             viewModels.Push(InitViewModel);
-            InitViewModel.PropertyChanged += InitViewModel_PropertyChanged;
+            InitViewModel.PropertyChanged += ContinuableViewModel_PropertyChanged;
         }
 
         readonly Stack<object> viewModels = new();
@@ -26,14 +26,20 @@ namespace JBlam.Multiflash.App
 
         public InitViewModel InitViewModel { get; }
         public ProcessSetViewModel? ProcessSet => InitViewModel.NextViewModel;
+        public ConfigurationViewModel? Configuration => ProcessSet?.NextViewModel;
 
-        void InitViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs args)
+        void ContinuableViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs args)
         {
-            if (args.IsFor(nameof(InitViewModel.NextViewModel)) && ProcessSet is not null)
+            var current = (sender as IContinuableViewModel<object>);
+            if (args.IsFor(nameof(IContinuableViewModel<object>.NextViewModel)) && current?.NextViewModel is object next)
             {
-                viewModels.Push(ProcessSet);
+                viewModels.Push(next);
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CurrentViewModel)));
-                InitViewModel.PropertyChanged -= InitViewModel_PropertyChanged;
+                current.PropertyChanged -= ContinuableViewModel_PropertyChanged;
+                if (next is IContinuableViewModel<object> continuable)
+                {
+                    continuable.PropertyChanged += ContinuableViewModel_PropertyChanged;
+                }
             }
         }
     }

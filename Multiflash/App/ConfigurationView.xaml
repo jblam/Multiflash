@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="JBlam.Multiflash.App.ConfigurationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:JBlam.Multiflash.App"
+             xmlns:config="clr-namespace:JBlam.Multiflash.App.ConfigItems"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance Type=local:ConfigurationViewModel}">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <ItemsControl ItemsSource="{Binding Verifications}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <config:VerificationView Margin="8 4" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{Binding Parameters}" DockPanel.Dock="Top">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <config:ParameterView Margin="8 4" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+        <ScrollViewer DockPanel.Dock="Bottom" FontFamily="Consolas" Margin="8" Padding="8" Background="#ddd" Name="SerialItemsScroller">
+            <ItemsControl ItemsSource="{Binding SerialContent}" Name="SerialItems">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <Run Text="{Binding StartedAt.TotalSeconds, StringFormat='00.000', Mode=OneTime}" />
+                            <Run Text="{Binding Direction, Mode=OneTime}" />
+                            <Run Text="{Binding Content, Mode=OneTime}" />
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

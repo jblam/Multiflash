@@ -30,7 +30,7 @@ namespace Multiflash.DemoTool
             for (double i = 0; i <= 1; i += 0.101)
             {
                 if (i > 0)
-                    await Task.Delay(1000);
+                    await Task.Delay(50);
                 report.Report(i);
             }
             report.Report(1);

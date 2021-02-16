@@ -22,6 +22,10 @@
                     </TextBlock>
                 </Label>
                 <Label DockPanel.Dock="Top" Content="{Binding BinarySet.Description}" />
+                <Button DockPanel.Dock="Bottom" HorizontalAlignment="Right"
+                        Margin="16"
+                        Padding="8 4"
+                        Command="{Binding Next}">Next</Button>
                 <ItemsControl ItemsSource="{Binding Consoles}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -30,6 +34,9 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </DockPanel>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ConfigurationViewModel}">
+            <local:ConfigurationView />
         </DataTemplate>
     </Window.Resources>
     <ContentPresenter Content="{Binding CurrentViewModel}" />
