@@ -19,7 +19,7 @@ namespace JBlam.Multiflash.App
             Connection = SerialConnection.Open(comPort, 115200);
             GetStatus = Command.Create(async () => StatusValue = await Connection.Prompt("?", true));
             Verifications = binarySet.Verifications.Select(v => new VerificationViewModel(v, Connection)).ToList();
-            Parameters = binarySet.Parameters.Select(p => new ParameterViewModel(p)).ToList();
+            Parameters = binarySet.ConfigTemplate.Parameters?.Select(p => new ParameterViewModel(p)).ToList() as IReadOnlyCollection<ParameterViewModel> ?? Array.Empty<ParameterViewModel>();
         }
 
         string? statusValue;
