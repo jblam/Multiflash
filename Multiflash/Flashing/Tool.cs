@@ -8,13 +8,20 @@ using System.Threading.Tasks;
 
 namespace JBlam.Multiflash
 {
+    using Binaries = IReadOnlyCollection<Binary>;
     public interface ITool
     {
         bool CanHandle(Binary binary);
         ProcessStartInfo GetStartInfo(Binary binary, string comPort);
     }
 
-    public class Avrdude : ITool
+    public interface ISetTool
+    {
+        (Binaries handled, Binaries remaining) CanHandle(Binaries binaries);
+        ProcessStartInfo GetStartInfo(Binaries binaries, string comPort);
+    }
+
+    public class Avrdude : ITool, ISetTool
     {
         private readonly string exePath;
         private readonly string configPath;
@@ -40,6 +47,19 @@ namespace JBlam.Multiflash
             return binary.Format == BinaryFormat.Hex;
         }
 
+        public (Binaries handled, Binaries remaining) CanHandle(Binaries binaries)
+        {
+            var first = binaries.First();
+            if (CanHandle(first))
+            {
+                return (new[] { first }, binaries.Skip(1).ToList());
+            }
+            else
+            {
+                return (Array.Empty<Binary>(), binaries);
+            }
+        }
+
         public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
         {
             var output = new ProcessStartInfo(exePath);
@@ -55,9 +75,16 @@ namespace JBlam.Multiflash
             output.ArgumentList.Add($"-Uflash:w:{binary.Path}:i");
             return output;
         }
+
+        public ProcessStartInfo GetStartInfo(Binaries binaries, string comPort)
+        {
+            if (binaries.Count != 1)
+                throw new InvalidOperationException("AVRDUDE cannot compose multiple binaries");
+            return GetStartInfo(binaries.First(), comPort);
+        }
     }
 
-    public class EspUploaderPyTool : ITool
+    public class EspUploaderPyTool : ITool, ISetTool
     {
         private readonly string pythonPath;
         private readonly string uploadScriptPath;
@@ -121,11 +148,53 @@ namespace JBlam.Multiflash
                 }
             };
         }
+
+        public (Binaries handled, Binaries remaining) CanHandle(Binaries binaries)
+        {
+            // JB 2021-02-16:
+            // For now, let's just assume all .bin files can be uploaded.
+            // If anything bad happens, we'll blame the person who produced the set
+            var handled = binaries.TakeWhile(CanHandle).ToList();
+            var unhandled = binaries.Skip(handled.Count).ToList();
+            return (handled, unhandled);
+        }
+
+        public ProcessStartInfo GetStartInfo(Binaries binaries, string comPort)
+        {
+            var output = new ProcessStartInfo(pythonPath)
+            {
+                ArgumentList =
+                {
+                    uploadScriptPath,
+                    "--chip",
+                    // TODO: targetplatform should go on the set I guess
+                    "--port",
+                    comPort,
+                    "--baud",
+                    "460800", // TODO: PIO's value is different to arduino's?
+                    "write_flash"
+                }
+            };
+            foreach (var binary in binaries)
+            {
+                if (!CanHandle(binary))
+                    throw new InvalidOperationException("ProcessStartInfo requested for an incompatible binary");
+                output.ArgumentList.Add(binary.StartAddress.ToString("X"));
+                output.ArgumentList.Add(binary.Path);
+            }
+            return output;
+        }
     }
 
-    public class DemoTool : ITool
+    public class DemoTool : ITool, ISetTool
     {
         public bool CanHandle(Binary binary) => true;
+
+        public (Binaries handled, Binaries remaining) CanHandle(Binaries binaries)
+        {
+            return (binaries, Array.Empty<Binary>());
+        }
+
         public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
         {
             var output = new ProcessStartInfo(@"Multiflash.DemoTool.exe")
@@ -134,5 +203,10 @@ namespace JBlam.Multiflash
             };
             return output;
         }
+
+        public ProcessStartInfo GetStartInfo(Binaries binaries, string comPort) => new ProcessStartInfo(@"Multiflash.DemoTool.exe")
+        {
+            Arguments = @"\r"
+        };
     }
 }
