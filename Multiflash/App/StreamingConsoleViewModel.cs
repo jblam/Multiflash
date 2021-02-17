@@ -16,9 +16,9 @@ namespace JBlam.Multiflash.App
     {
         private readonly int expectedExitCode;
 
-        public StreamingConsoleViewModel(Binary b, ProcessStartInfo startInfo, int expectedExitCode = 0)
+        public StreamingConsoleViewModel(string name, ProcessStartInfo startInfo, int expectedExitCode = 0)
         {
-            Binary = b;
+            Name = name;
             StartInfo = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
             this.expectedExitCode = expectedExitCode;
         }
@@ -85,7 +85,7 @@ namespace JBlam.Multiflash.App
         public bool IsRunning => !Process?.HasExited ?? false;
         public bool IsStarted => Process is not null;
 
-        public Binary Binary { get; }
+        public string Name { get; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }

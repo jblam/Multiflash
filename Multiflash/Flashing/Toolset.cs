@@ -46,20 +46,21 @@ namespace JBlam.Multiflash
     {
         internal static FlashPlan GetPlan(BinarySet set, IReadOnlyCollection<ISetTool> tools)
         {
-            (ISetTool tool, Binaries handled, Binaries remaining)? GetNextTool(Binaries binaries)
-            {
-                return tools.Select(tool =>
+            (ISetTool tool, Binaries handled, Binaries remaining)? GetNextTool(string? targetPlatform, Binaries binaries) =>
+                tools.Select(tool =>
                 {
-                    var (handled, remaining) = tool.CanHandle(binaries);
+                    var (handled, remaining) = tool.CanHandle(targetPlatform, binaries);
                     return (tool, handled, remaining);
-                }).SkipWhile(t => !t.handled.Any()).Take(1).Cast<(ISetTool, Binaries, Binaries)?>().FirstOrDefault();
-            }
+                }).SkipWhile(t => !t.handled.Any())
+                  .Take(1)
+                  .Cast<(ISetTool, Binaries, Binaries)?>()
+                  .FirstOrDefault();
 
             List<(ISetTool, Binaries)> output = new();
             Binaries remaining = set.Binaries;
             while (remaining.Any())
             {
-                if (GetNextTool(remaining) is (ISetTool, Binaries, Binaries) value && value.handled.Any())
+                if (GetNextTool(set.TargetPlatform, remaining) is (ISetTool, Binaries, Binaries) value && value.handled.Any())
                 {
                     output.Add((value.tool, value.handled));
                     remaining = value.remaining;
@@ -91,6 +92,6 @@ namespace JBlam.Multiflash
             Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\tools\python3\3.7.2-post1\python.exe"),
             Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\hardware\esp8266\2.7.4\tools\upload.py"));
 
-        public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, new ISetTool[] { espUploaderPyTool });
+        public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, new ISetTool[] { avrdude, espUploaderPyTool });
     }
 }

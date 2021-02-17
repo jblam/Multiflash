@@ -9,22 +9,21 @@ using System.Threading.Tasks;
 namespace JBlam.Multiflash
 {
     using Binaries = IReadOnlyCollection<Binary>;
-    public interface ITool
-    {
-        bool CanHandle(Binary binary);
-        ProcessStartInfo GetStartInfo(Binary binary, string comPort);
-    }
 
     public interface ISetTool
     {
-        (Binaries handled, Binaries remaining) CanHandle(Binaries binaries);
-        ProcessStartInfo GetStartInfo(Binaries binaries, string comPort);
+        (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries);
+        ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort);
     }
 
-    public class Avrdude : ITool, ISetTool
+    public class Avrdude : ISetTool
     {
         private readonly string exePath;
         private readonly string configPath;
+        private static readonly IReadOnlyCollection<string> validTargetPlatforms = new[]
+        {
+            "atmega328p"
+        };
 
         public Avrdude(string exePath, string configPath)
         {
@@ -42,15 +41,15 @@ namespace JBlam.Multiflash
             this.configPath = configPath;
         }
 
-        public bool CanHandle(Binary binary)
+        static bool CanHandle(string? targetPlatform, Binary binary)
         {
-            return binary.Format == BinaryFormat.Hex;
+            return binary.Format == BinaryFormat.Hex && validTargetPlatforms.Contains(targetPlatform);
         }
 
-        public (Binaries handled, Binaries remaining) CanHandle(Binaries binaries)
+        public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
         {
             var first = binaries.First();
-            if (CanHandle(first))
+            if (CanHandle(targetPlatform, first))
             {
                 return (new[] { first }, binaries.Skip(1).ToList());
             }
@@ -60,12 +59,12 @@ namespace JBlam.Multiflash
             }
         }
 
-        public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
+        ProcessStartInfo GetStartInfo(string? targetPlatform, Binary binary, string comPort)
         {
             var output = new ProcessStartInfo(exePath);
             output.ArgumentList.Add(@"-C");
             output.ArgumentList.Add(configPath);
-            output.ArgumentList.Add("-patmega328p");
+            output.ArgumentList.Add("-p" + targetPlatform);
             output.ArgumentList.Add("-carduino");
             output.ArgumentList.Add("-P");
             output.ArgumentList.Add(comPort);
@@ -76,15 +75,15 @@ namespace JBlam.Multiflash
             return output;
         }
 
-        public ProcessStartInfo GetStartInfo(Binaries binaries, string comPort)
+        public ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort)
         {
             if (binaries.Count != 1)
                 throw new InvalidOperationException("AVRDUDE cannot compose multiple binaries");
-            return GetStartInfo(binaries.First(), comPort);
+            return GetStartInfo(targetPlatform, binaries.First(), comPort);
         }
     }
 
-    public class EspUploaderPyTool : ITool, ISetTool
+    public class EspUploaderPyTool : ISetTool
     {
         private readonly string pythonPath;
         private readonly string uploadScriptPath;
@@ -109,9 +108,9 @@ namespace JBlam.Multiflash
             this.pythonPath = pythonPath;
             this.uploadScriptPath = uploadScriptPath;
         }
-        public bool CanHandle(Binary binary) => binary.Format == BinaryFormat.Bin
-            && binary.TargetPlatform is string platform
+        static bool CanHandlePlatform(string? targetPlatform) => targetPlatform is string platform
             && validTargetPlatforms.Contains(platform.ToLowerInvariant());
+        static bool CanHandle(Binary binary) => binary.Format == BinaryFormat.Bin;
 
 
         /* Sensor, ESP32, PIO build
@@ -129,37 +128,16 @@ namespace JBlam.Multiflash
 2686976 spiffs.bin
         */
 
-        public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
+        public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
         {
-            return new ProcessStartInfo(pythonPath)
-            {
-                ArgumentList =
-                {
-                    uploadScriptPath,
-                    "--chip",
-                    binary.TargetPlatform!.ToLowerInvariant(),
-                    "--port",
-                    comPort,
-                    "--baud",
-                    "115200",
-                    "write_flash",
-                    binary.StartAddress.ToString("X"),
-                    binary.Path
-                }
-            };
-        }
-
-        public (Binaries handled, Binaries remaining) CanHandle(Binaries binaries)
-        {
-            // JB 2021-02-16:
-            // For now, let's just assume all .bin files can be uploaded.
-            // If anything bad happens, we'll blame the person who produced the set
+            if (!CanHandlePlatform(targetPlatform))
+                return (Array.Empty<Binary>(), binaries);
             var handled = binaries.TakeWhile(CanHandle).ToList();
             var unhandled = binaries.Skip(handled.Count).ToList();
             return (handled, unhandled);
         }
 
-        public ProcessStartInfo GetStartInfo(Binaries binaries, string comPort)
+        public ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort)
         {
             var output = new ProcessStartInfo(pythonPath)
             {
@@ -167,7 +145,7 @@ namespace JBlam.Multiflash
                 {
                     uploadScriptPath,
                     "--chip",
-                    // TODO: targetplatform should go on the set I guess
+                    targetPlatform!.ToLowerInvariant(),
                     "--port",
                     comPort,
                     "--baud",
@@ -186,25 +164,14 @@ namespace JBlam.Multiflash
         }
     }
 
-    public class DemoTool : ITool, ISetTool
+    public class DemoTool : ISetTool
     {
-        public bool CanHandle(Binary binary) => true;
-
-        public (Binaries handled, Binaries remaining) CanHandle(Binaries binaries)
+        public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
         {
             return (binaries, Array.Empty<Binary>());
         }
 
-        public ProcessStartInfo GetStartInfo(Binary binary, string comPort)
-        {
-            var output = new ProcessStartInfo(@"Multiflash.DemoTool.exe")
-            {
-                Arguments = @"\r"
-            };
-            return output;
-        }
-
-        public ProcessStartInfo GetStartInfo(Binaries binaries, string comPort) => new ProcessStartInfo(@"Multiflash.DemoTool.exe")
+        public ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort) => new ProcessStartInfo(@"Multiflash.DemoTool.exe")
         {
             Arguments = @"\r"
         };

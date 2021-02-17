@@ -11,6 +11,7 @@ namespace JBlam.Multiflash
 {
     public class BinarySet
     {
+        public string? TargetPlatform { get; init; }
         public IReadOnlyCollection<Binary> Binaries { get; init; } = Array.Empty<Binary>();
         public string Name { get; init; } = string.Empty;
         public string Description { get; init; } = string.Empty;

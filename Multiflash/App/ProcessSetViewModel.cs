@@ -39,16 +39,15 @@ namespace JBlam.Multiflash.App
             var plan = toolset.GetPlan(BinarySet);
             if (plan.IsSuccess(out var details))
             {
-                Consoles = details.Select(part =>
+                Consoles = details.Select((part, index) =>
                 {
-                    var s = part.Item1.GetStartInfo(part.Item2, comPort ?? throw new InvalidOperationException("Couldn't get the port"));
+                    var s = part.Item1.GetStartInfo(BinarySet.TargetPlatform, part.Item2, comPort ?? throw new InvalidOperationException("Couldn't get the port"));
                     s.RedirectStandardOutput = true;
                     s.RedirectStandardError = true;
                     s.RedirectStandardInput = true;
                     s.CreateNoWindow = true;
                     s.WorkingDirectory = workingDir ?? s.WorkingDirectory;
-                    // TODO: title here.
-                    return new StreamingConsoleViewModel(part.Item2.First(), s);
+                    return new StreamingConsoleViewModel($"{BinarySet.Name} ({index + 1} of {details.Count})", s);
                 }).ToList();
             }
             else
