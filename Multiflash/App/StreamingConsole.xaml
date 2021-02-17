@@ -31,7 +31,7 @@
                         <Run ToolTip="{Binding IsSuccess, Converter={StaticResource SuccessTooltip}, Mode=OneWay}"
                              Text="{Binding IsSuccess, Converter={StaticResource SuccessIcon}, FallbackValue=😶, Mode=OneWay}">
                         </Run>
-                        <Run Text="{Binding Binary.Path, Mode=OneWay, FallbackValue='Not started'}" />
+                        <Run Text="{Binding Name, Mode=OneWay, FallbackValue='Not started'}" />
                     </TextBlock>
                 </Label>
                 <ProgressBar IsIndeterminate="True" Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisible}, FallbackValue=Collapsed}" />
