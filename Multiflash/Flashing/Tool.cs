@@ -157,7 +157,7 @@ namespace JBlam.Multiflash
             {
                 if (!CanHandle(binary))
                     throw new InvalidOperationException("ProcessStartInfo requested for an incompatible binary");
-                output.ArgumentList.Add(binary.StartAddress.ToString("X"));
+                output.ArgumentList.Add($"0x{binary.StartAddress:X}");
                 output.ArgumentList.Add(binary.Path);
             }
             return output;
