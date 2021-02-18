@@ -94,4 +94,16 @@ namespace JBlam.Multiflash
 
         public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, new ISetTool[] { avrdude, espUploaderPyTool });
     }
+
+    public class PlatformIoToolset : Toolset
+    {
+        static readonly string ExpectedAppDataRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                @".platformio");
+        readonly EspUploaderPyTool espUploaderPyTool = new(
+            Path.Combine(ExpectedAppDataRoot, @"penv\scripts\python.exe"),
+            Path.Combine(ExpectedAppDataRoot, @"packages\tool-esptoolpy\esptool.py"));
+
+        public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, new ISetTool[] { espUploaderPyTool });
+    }
 }

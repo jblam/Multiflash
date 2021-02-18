@@ -26,7 +26,7 @@ namespace JBlam.Multiflash
             var dir = Directory.CreateDirectory(tempName);
             ZipFile.ExtractToDirectory(archivePath, tempName);
             var json = File.OpenRead(Path.Combine(dir.FullName, "set.json"));
-            var set = await JsonSerializer.DeserializeAsync<BinarySet>(json);
+            var set = await JsonSerializer.DeserializeAsync<BinarySet>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             return (tempName, set);
         }
         public static async Task<BinarySet> ReadSetAsync(string archivePath)

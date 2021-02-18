@@ -49,6 +49,7 @@ namespace JBlam.Multiflash.App
                     s.WorkingDirectory = workingDir ?? s.WorkingDirectory;
                     return new StreamingConsoleViewModel($"{BinarySet.Name} ({index + 1} of {details.Count})", s);
                 }).ToList();
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Consoles)));
             }
             else
             {

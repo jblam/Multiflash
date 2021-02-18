@@ -19,32 +19,40 @@
         </Expander.HeaderTemplate>
         <Expander.Header>
             <StackPanel>
-                <Label>
-                    <TextBlock>
-                        <TextBlock.Resources>
-                            <helpers:ConditionalValueConverter x:Key="SuccessIcon" TrueValue="✅" FalseValue="❎" NullValue="⌚" />
-                            <helpers:ConditionalValueConverter x:Key="SuccessTooltip"
+                <DockPanel>
+                    <Label>
+                        <TextBlock>
+                            <TextBlock.Resources>
+                                <helpers:ConditionalValueConverter x:Key="SuccessIcon" TrueValue="✅" FalseValue="❎" NullValue="⌚" />
+                                <helpers:ConditionalValueConverter x:Key="SuccessTooltip"
                                                                TrueValue="Successful"
                                                                FalseValue="Failed"
                                                                NullValue="Running" />
-                        </TextBlock.Resources>
+                            </TextBlock.Resources>
                         <Run ToolTip="{Binding IsSuccess, Converter={StaticResource SuccessTooltip}, Mode=OneWay}"
                              Text="{Binding IsSuccess, Converter={StaticResource SuccessIcon}, FallbackValue=😶, Mode=OneWay}">
                         </Run>
                         <Run Text="{Binding Name, Mode=OneWay, FallbackValue='Not started'}" />
-                    </TextBlock>
-                </Label>
+                        </TextBlock>
+                    </Label>
+                    <Button Command="{Binding CopyText}"
+                            VerticalAlignment="Center" HorizontalAlignment="Right" Padding="8 2">Copy content</Button>
+                </DockPanel>
                 <ProgressBar IsIndeterminate="True" Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisible}, FallbackValue=Collapsed}" />
             </StackPanel>
         </Expander.Header>
-        <Label DockPanel.Dock="Bottom" FontFamily="Consolas" Margin="8" Background="#ddd">
-            <ItemsControl ItemsSource="{Binding Output}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Data}" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Label>
+        <Grid>
+            <Label DockPanel.Dock="Bottom" FontFamily="Consolas" Background="#ddd" Padding="0">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" Margin="8 0">
+                    <ItemsControl ItemsSource="{Binding Output}" Margin="0 8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Data, Mode=OneTime}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Label>
+        </Grid>
     </Expander>
 </UserControl>

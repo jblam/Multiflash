@@ -24,11 +24,20 @@ namespace JBlam.Multiflash.App
                     SelectedPort = null;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Ports)));
             });
-            StartTools = Command.Create(() =>
+            StartTools = Command.Create(async () =>
             {
-                NextViewModel = new ProcessSetViewModel(toolset);
-                // TODO: actually extract the contents
-                _ = NextViewModel.SetBinaries(BinarySetViewModel.ExtractedSet!, SelectedPort!);
+                try
+                {
+                    NextViewModel = new ProcessSetViewModel(toolset);
+                    var (extractedLocation, extractedSet) = await BinarySet.Extract(BinarySetViewModel.BinarySetPath!);
+                    await NextViewModel.SetBinaries(extractedSet!, SelectedPort!, extractedLocation);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    MessageBox.Show(Application.Current.MainWindow, "Failed to extract data.\r\n\r\n" + ex.ToString(), "Flashing failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Application.Current.Shutdown(1);
+                }
             }, () => SelectedPort != null && (BinarySetViewModel.BinarySetTask?.IsCompletedSuccessfully ?? false));
             BinarySetViewModel.PropertyChanged += (_, args) =>
             {
