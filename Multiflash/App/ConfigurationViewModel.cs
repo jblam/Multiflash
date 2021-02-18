@@ -35,6 +35,9 @@ namespace JBlam.Multiflash.App
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        // TODO: this will display like arse if there are no verifications or no parameters.
+        // TODO: CommitConfig.CanExecute is a bit janky when tabbing/typing in parameter input boxes.
+
         public IReadOnlyCollection<VerificationViewModel> Verifications { get; }
         public IReadOnlyCollection<ParameterViewModel> Parameters { get; }
         public ICommand CommitConfig { get; }

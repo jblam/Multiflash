@@ -95,6 +95,19 @@ namespace JBlam.Multiflash
 
         public EspUploaderPyTool(string pythonPath, string uploadScriptPath)
         {
+            // TODO: this misrepresents compatibility between the ESP32 and ESP8266 SDKs.
+            // - esptool.py (ESP32)
+            // - uploader.py (ESP8266)
+            // seems like the major incompatibility is the uploader.py does not support
+            // multiple binaries.
+            //
+            // Decisions/research needed:
+            // - do we *really need* multiple binaries? might be a slightly better UX to see
+            //   each file being flashed
+            // - do we want to support PIO's toolset in and of itself?
+            // - are PIO's and Arduino's toolsets mutually compatible for the *same chip*?
+            // - are the 8266 and 32 toolsets mutually compatible, just with different capabilities?
+
             if (string.IsNullOrEmpty(pythonPath))
             {
                 throw new ArgumentException($"'{nameof(pythonPath)}' cannot be null or empty", nameof(pythonPath));
