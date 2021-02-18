@@ -15,13 +15,8 @@ namespace JBlam.Multiflash
         public IReadOnlyCollection<Binary> Binaries { get; init; } = Array.Empty<Binary>();
         public string Name { get; init; } = string.Empty;
         public string Description { get; init; } = string.Empty;
-        public IReadOnlyCollection<Verification> Verifications { get; init; } = new[] { new Verification("?", "Status", "Gets the runtime status of the device") };
-        public ConfigTemplate ConfigTemplate { get; } = new ConfigTemplate
-        {
-            SerialCommand = "SET-CONFIG",
-            Template = JsonDocument.Parse(@"{""param"":""{{PARAMETER-SSID}}""}").RootElement,
-            Parameters = new[] { new Parameter("PARAMETER-SSID", "SSID", "The WiFi network SSID") }
-        };
+        public IReadOnlyCollection<Verification> Verifications { get; init; } = Array.Empty<Verification>();
+        public ConfigTemplate? ConfigTemplate { get; init; }
 
         public static async Task<(string extractLocation, BinarySet? contents)> Extract(string archivePath)
         {
@@ -49,7 +44,7 @@ namespace JBlam.Multiflash
             {
                 throw new ZipFileException("Zip file did not contain the expected set.json file");
             }
-            var maybeSet = await JsonSerializer.DeserializeAsync<BinarySet>(zipStream);
+            var maybeSet = await JsonSerializer.DeserializeAsync<BinarySet>(zipStream, new JsonSerializerOptions(JsonSerializerDefaults.Web));
             return maybeSet ?? throw new ArgumentException("The Zip archive content could not be read.");
         }
     }
