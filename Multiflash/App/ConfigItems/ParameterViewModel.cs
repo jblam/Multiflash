@@ -13,6 +13,7 @@ namespace JBlam.Multiflash.App.ConfigItems
 
         public ParameterViewModel(Parameter parameter)
         {
+            #error support optional parameters
             Parameter = parameter;
         }
         public Parameter Parameter { get; }

@@ -17,6 +17,9 @@ namespace JBlam.Multiflash.App
         {
             if (toolset is null)
                 throw new ArgumentNullException(nameof(toolset));
+            #error Hide the ports until you hit the button.
+            // ZG paraphrased: the human needs to hit the button to
+            // tell the robots that they should talk now.
             RefreshPorts = Command.Create(() =>
             {
                 Ports = SerialPort.GetPortNames();
