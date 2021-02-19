@@ -40,7 +40,13 @@ namespace JBlam.Multiflash
 
     public class DummyToolset : IToolset
     {
-        public FlashPlan GetPlan(BinarySet set) => FlashPlan.Success(new[] { ((ISetTool)new DemoTool(), set.Binaries) });
+        readonly ISetTool tool = new DemoTool();
+        public FlashPlan GetPlan(BinarySet set) => 
+            FlashPlan.Success(new[] 
+            {
+                (tool, (Binaries)set.Binaries.Take(1).ToList()),
+                (tool, set.Binaries.Skip(1).ToList()),
+            });
     }
 
     public abstract class Toolset : IToolset

@@ -168,7 +168,7 @@ namespace JBlam.Multiflash
     {
         public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
         {
-            return (binaries, Array.Empty<Binary>());
+            return (binaries.Take(1).ToList(), binaries.Skip(1).ToList());
         }
 
         public ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort) => new ProcessStartInfo(@"Multiflash.DemoTool.exe")

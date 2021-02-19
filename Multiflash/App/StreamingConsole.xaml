@@ -41,18 +41,16 @@
                 <ProgressBar IsIndeterminate="True" Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisible}, FallbackValue=Collapsed}" />
             </StackPanel>
         </Expander.Header>
-        <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" Margin="8 0">
             <Label DockPanel.Dock="Bottom" FontFamily="Consolas" Background="#ddd" Padding="0">
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" Margin="8 0">
-                    <ItemsControl ItemsSource="{Binding Output}" Margin="0 8">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Data, Mode=OneTime}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </ScrollViewer>
+                <ItemsControl ItemsSource="{Binding Output}" Margin="0 8">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Data, Mode=OneTime}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Label>
-        </Grid>
+        </ScrollViewer>
     </Expander>
 </UserControl>

@@ -15,12 +15,7 @@ namespace JBlam.Multiflash.App
 {
     public class StreamingConsoleViewModel : INotifyPropertyChanged
     {
-        // TODO: determine if we have any tool that returns a nonzero exit code on success.
         private readonly int expectedExitCode;
-
-        // TODO: verbose tools cause the console window to overflow.
-        // Even though the console view is presented inside a scroll viewer, we need to convince
-        // WPF to lock its size at least to the height of the display.
 
         public StreamingConsoleViewModel(string name, ProcessStartInfo startInfo, int expectedExitCode = 0)
         {
