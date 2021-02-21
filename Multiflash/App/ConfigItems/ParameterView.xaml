@@ -7,6 +7,9 @@
              mc:Ignorable="d" 
              d:DataContext="{d:DesignInstance Type=local:ParameterViewModel}"
              d:DesignHeight="36" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisible" />
+    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="192" />
@@ -16,8 +19,12 @@
             <RowDefinition />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Label Margin="0 0 8 0" HorizontalContentAlignment="Stretch" Grid.RowSpan="2">
-            <TextBlock TextWrapping="Wrap" Text="{Binding Parameter.Label}" TextAlignment="Right" />
+        <Label Margin="0 0 8 0" HorizontalContentAlignment="Stretch" Grid.RowSpan="2" Padding="0">
+            <StackPanel>
+                <TextBlock TextWrapping="Wrap" Text="{Binding Parameter.Label}" TextAlignment="Right" />
+                <TextBlock TextAlignment="Right" FontStyle="Italic" FontSize="10"
+                           Visibility="{Binding IsRequired, Converter={StaticResource BoolToVisible}}">* Required</TextBlock>
+            </StackPanel>
         </Label>
         <TextBox Text="{Binding Value}" Grid.Column="1" VerticalContentAlignment="Center" />
         <TextBlock TextWrapping="Wrap" FontSize="10" Text="{Binding Parameter.Description, Mode=OneTime}" Grid.Row="1" Grid.Column="1" />

@@ -19,7 +19,6 @@ namespace JBlam.Multiflash.App.ConfigItems
             else
             {
                 Send = Command.Create(() => {}, () => false);
-                #error make a visible note that the user may need to reboot device
             }
             if (verification.ResponsePrefix is string prefix)
             {

@@ -23,7 +23,7 @@ namespace JBlam.Multiflash.App
                 ?? Array.Empty<ParameterViewModel>();
             CommitConfig = Command.Create(
                 () => Connection.Prompt($"{binarySet.ConfigTemplate!.SerialCommand} {binarySet.ConfigTemplate!.Build(GetValue)}"),
-                () => (binarySet.ConfigTemplate?.SerialCommand) != null && Parameters.All(p => p.Value != null));
+                () => (binarySet.ConfigTemplate?.SerialCommand) != null && Parameters.All(p => !p.IsRequired || p.Value != null));
 
             foreach (var parameter in Parameters)
             {
@@ -36,7 +36,6 @@ namespace JBlam.Multiflash.App
         public event PropertyChangedEventHandler? PropertyChanged;
 
         // TODO: this will display like arse if there are no verifications or no parameters.
-        // TODO: CommitConfig.CanExecute is a bit janky when tabbing/typing in parameter input boxes.
 
         public IReadOnlyCollection<VerificationViewModel> Verifications { get; }
         public IReadOnlyCollection<ParameterViewModel> Parameters { get; }
@@ -56,6 +55,10 @@ namespace JBlam.Multiflash.App
 
         public ObservableCollection<Message> SerialContent => Connection.Output;
 
-        internal string? GetValue(Parameter p) => Parameters.FirstOrDefault(vm => vm.Parameter.Identifier == p.Identifier)?.Value;
+        internal string? GetValue(Parameter p)
+        {
+            var vm = Parameters.FirstOrDefault(vm => vm.Parameter.Identifier == p.Identifier);
+            return vm?.Value ?? vm?.Parameter.Fallback;
+        }
     }
 }

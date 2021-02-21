@@ -13,7 +13,6 @@ namespace JBlam.Multiflash.App.ConfigItems
 
         public ParameterViewModel(Parameter parameter)
         {
-            #error support optional parameters
             Parameter = parameter;
         }
         public Parameter Parameter { get; }
@@ -26,6 +25,7 @@ namespace JBlam.Multiflash.App.ConfigItems
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
             }
         }
+        public bool IsRequired => Parameter.Fallback is null;
 
         public event PropertyChangedEventHandler? PropertyChanged;
     }
