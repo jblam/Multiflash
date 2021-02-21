@@ -17,9 +17,10 @@ namespace JBlam.Multiflash.App
         {
             if (toolset is null)
                 throw new ArgumentNullException(nameof(toolset));
-            #error Hide the ports until you hit the button.
-            // ZG paraphrased: the human needs to hit the button to
-            // tell the robots that they should talk now.
+
+            // We explicitly don't want to "run this command at startup" because it leads to a wonky
+            // UX if the user hasn't yet connected the device. It *looks* like we're providing "live
+            // updates" but we're not.
             RefreshPorts = Command.Create(() =>
             {
                 Ports = SerialPort.GetPortNames();
@@ -47,7 +48,6 @@ namespace JBlam.Multiflash.App
                 if (args.IsFor(nameof(BinarySetViewModel.EffectiveViewModel)))
                     StartTools.RaiseCanExecuteChanged();
             };
-            Ports = SerialPort.GetPortNames();
         }
 
         private bool? isDragDropValid;
@@ -57,7 +57,7 @@ namespace JBlam.Multiflash.App
         public BinarySetViewModel BinarySetViewModel { get; } = new BinarySetViewModel();
         public ICommand RefreshPorts { get; }
         public ICommand StartTools { get; }
-        public IReadOnlyCollection<string> Ports { get; private set; }
+        public IReadOnlyCollection<string>? Ports { get; private set; }
         public string? SelectedPort
         {
             get => selectedPort;

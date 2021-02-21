@@ -8,7 +8,17 @@
              d:DataContext="{d:DesignInstance Type=local:InitViewModel}"
              d:DesignHeight="27" d:DesignWidth="800">
     <StackPanel Orientation="Horizontal">
-        <ComboBox ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" MinWidth="75" />
-        <Button Command="{Binding RefreshPorts}">🔄</Button>
+        <Button Command="{Binding RefreshPorts}" Padding="8 2" Margin="0 0 8 0">🔄 Scan ports</Button>
+        <ComboBox ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" MinWidth="75">
+            <ComboBox.Style>
+                <Style TargetType="ComboBox">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Ports}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ComboBox.Style>
+        </ComboBox>
     </StackPanel>
 </UserControl>
