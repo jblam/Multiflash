@@ -1,4 +1,5 @@
 ﻿using JBlam.Multiflash.Helpers;
+using JBlam.Multiflash.Tools;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,12 +13,12 @@ namespace JBlam.Multiflash.App
 {
     class ProcessSetViewModel : IContinuableViewModel<ConfigurationViewModel>, INotifyPropertyChanged
     {
-        private readonly IToolset toolset;
+        private readonly Toolset toolset;
         private string? comPort;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public ProcessSetViewModel(IToolset toolset)
+        public ProcessSetViewModel(Toolset toolset)
         {
             this.toolset = toolset ?? throw new ArgumentNullException(nameof(toolset));
             Next = Command.Create(() =>

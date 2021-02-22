@@ -1,4 +1,5 @@
 ﻿using JBlam.Multiflash.Helpers;
+using JBlam.Multiflash.Tools;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,8 +11,8 @@ namespace JBlam.Multiflash.App
 {
     class MultiflashViewModel : INotifyPropertyChanged
     {
-        public MultiflashViewModel() : this(new PlatformIoToolset()) { }
-        public MultiflashViewModel(IToolset toolset)
+        public MultiflashViewModel() : this(new ArduinoToolset()) { }
+        public MultiflashViewModel(Toolset toolset)
         {
             InitViewModel = new(toolset);
             viewModels.Push(InitViewModel);

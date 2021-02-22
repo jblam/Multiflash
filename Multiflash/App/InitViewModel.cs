@@ -1,4 +1,5 @@
 ﻿using JBlam.Multiflash.Helpers;
+using JBlam.Multiflash.Tools;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +14,7 @@ namespace JBlam.Multiflash.App
 {
     class InitViewModel : IContinuableViewModel<ProcessSetViewModel>, INotifyPropertyChanged
     {
-        public InitViewModel(IToolset toolset)
+        public InitViewModel(Toolset toolset)
         {
             if (toolset is null)
                 throw new ArgumentNullException(nameof(toolset));
