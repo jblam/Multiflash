@@ -89,6 +89,8 @@ namespace JBlam.Multiflash.App
 
         public Toolset Toolset { get; }
 
+        public Version? ApplicationVersion { get; } = typeof(InitViewModel).Assembly.GetName().Version;
+
         public void OnDragEnter(DragEventArgs args)
         {
             IsDragDropValid = args.Data.GetDataPresent(DataFormats.FileDrop);

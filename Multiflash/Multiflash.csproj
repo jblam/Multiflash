@@ -6,6 +6,11 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>JBlam.Multiflash</RootNamespace>
     <Nullable>enable</Nullable>
+    <Authors>Jeremy Blamey</Authors>
+    <Company></Company>
+    <Description>A GUI application for flashing microcontroller firmware.</Description>
+    <Copyright>© Jeremy Blamey 2021</Copyright>
+    <RepositoryUrl>https://github.com/jblam/Multiflash</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +18,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Multiflash.DemoTool\Multiflash.DemoTool.csproj" />
+    <!--
+      JB 2021-02-22
+      Workaround for self-contained trimming breaking WPF
+      https://github.com/dotnet/sdk/issues/14261
+    -->
+    <TrimmerRootAssembly Include="System.Runtime" />
+    <TrimmerRootAssembly Include="System.Runtime.Extensions" />
+    <TrimmerRootAssembly Include="System.Diagnostics.Debug" />
+    <!-- Should probably add myself too. -->
+    <TrimmerRootAssembly Include="Multiflash" />
   </ItemGroup>
 
 </Project>
