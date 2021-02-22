@@ -6,6 +6,11 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>JBlam.Multiflash</RootNamespace>
     <Nullable>enable</Nullable>
+    <Authors>Jeremy Blamey</Authors>
+    <Company></Company>
+    <Description>A GUI application for flashing microcontroller firmware.</Description>
+    <Copyright>© Jeremy Blamey 2021</Copyright>
+    <RepositoryUrl>https://github.com/jblam/Multiflash</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
