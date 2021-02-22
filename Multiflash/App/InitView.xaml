@@ -36,29 +36,37 @@
             BorderBrush="{Binding IsDragDropValid, Converter={StaticResource BorderColour}, FallbackValue={StaticResource ValidBorder}}" BorderThickness="3" CornerRadius="15"
             Margin="8"
             Background="{Binding IsDragDropValid, Converter={StaticResource BackgroundColour}, FallbackValue={StaticResource ValidBackground}}">
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-            <StackPanel Orientation="Horizontal" Margin="20">
-                <Label>COM port:</Label>
-                <local:ComPortSelector />
-            </StackPanel>
-            <local:BinarySetPreview DataContext="{Binding BinarySetViewModel}" Margin="20"></local:BinarySetPreview>
-            <Label DataContext="{Binding Toolset}" Margin="20">
-                <StackPanel>
-                    <TextBlock>
+        <Grid>
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Margin="20">
+                    <Label>COM port:</Label>
+                    <local:ComPortSelector />
+                </StackPanel>
+                <local:BinarySetPreview DataContext="{Binding BinarySetViewModel}" Margin="20"></local:BinarySetPreview>
+                <Label DataContext="{Binding Toolset}" Margin="20">
+                    <StackPanel>
+                        <TextBlock>
                         <Run>Toolset:</Run>
                         <Run Text="{Binding ToolsetName, Mode=OneTime}" />
-                    </TextBlock>
-                    <TextBlock Visibility="{Binding IsInstalled, Converter={StaticResource BoolToCollapsed}}">Missing tools:</TextBlock>
-                    <ItemsControl ItemsSource="{Binding MissingTools}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding ToolName}" Margin="4 0 0 0" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                        </TextBlock>
+                        <TextBlock Visibility="{Binding IsInstalled, Converter={StaticResource BoolToCollapsed}}">Missing tools:</TextBlock>
+                        <ItemsControl ItemsSource="{Binding MissingTools}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding ToolName}" Margin="4 0 0 0" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Label>
+                <Button Command="{Binding StartTools}" Margin="20">Go</Button>
+            </StackPanel>
+            <Label VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                <TextBlock>
+                    <Run>Multiflash version</Run>
+                    <Run Text="{Binding ApplicationVersion, Mode=OneTime, TargetNullValue=(unknown), FallbackValue=(unknown)}"/>
+                </TextBlock>
             </Label>
-            <Button Command="{Binding StartTools}" Margin="20">Go</Button>
-        </StackPanel>
+        </Grid>
     </Border>
 </UserControl>
