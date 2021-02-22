@@ -1,4 +1,4 @@
 ﻿namespace JBlam.Multiflash
 {
-    public record Verification(string Prompt, string Label, string Description);
+    public record Verification(string? Prompt, string? ResponsePrefix, string Label, string Description);
 }

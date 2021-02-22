@@ -10,17 +10,30 @@
              d:DataContext="{d:DesignInstance Type=local:ConfigurationViewModel}">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top">
-            <ItemsControl ItemsSource="{Binding Verifications}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <config:VerificationView Margin="8 4" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel.Resources>
+                <Style TargetType="FrameworkElement" x:Key="FlowContent">
+                    <Setter Property="Margin" Value="200 4" />
+                </Style>
+                <Style TargetType="Label" x:Key="SectionHeader" BasedOn="{StaticResource FlowContent}">
+                    <Setter Property="FontSize" Value="18" />
+                </Style>
+            </StackPanel.Resources>
+            <Label Style="{StaticResource SectionHeader}">Configure</Label>
             <ItemsControl ItemsSource="{Binding Parameters}" DockPanel.Dock="Top">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <config:ParameterView Margin="8 4" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Command="{Binding CommitConfig}"
+                    Style="{StaticResource FlowContent}"
+                    Padding="8 2" HorizontalAlignment="Left">Set config</Button>
+            <Label Style="{StaticResource SectionHeader}">Verify</Label>
+            <ItemsControl ItemsSource="{Binding Verifications}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <config:VerificationView Margin="8 4" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

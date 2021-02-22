@@ -1,4 +1,4 @@
-﻿using JBlam.Multiflash.Helpers;
+using JBlam.Multiflash.Helpers;
 using JBlam.Multiflash.Serial;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -11,7 +11,26 @@ namespace JBlam.Multiflash.App.ConfigItems
         internal VerificationViewModel(Verification verification, SerialConnection serialConnection)
         {
             Verification = verification;
-            Send = Command.Create(async () => Response = await serialConnection.Prompt(Verification.Prompt, true));
+            if (verification.Prompt is string prompt)
+            {
+                Send = Command.Create(
+                    async () => Response = await serialConnection.Prompt(prompt, true));
+            }
+            else
+            {
+                Send = Command.Create(() => {}, () => false);
+            }
+            if (verification.ResponsePrefix is string prefix)
+            {
+                serialConnection.Output.CollectionChanged += (sender, e) =>
+                {
+                    var newItem = serialConnection.Output[e.NewStartingIndex];
+                    if (newItem.IsTerminated && newItem.Direction == MessageDirection.FromRemote && newItem.Content.StartsWith(prefix))
+                    {
+                        Response = newItem.Content;
+                    }
+                };
+            }
         }
 
         public Verification Verification { get; }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace JBlam.Multiflash.App
@@ -21,6 +22,7 @@ namespace JBlam.Multiflash.App
             Name = name;
             StartInfo = startInfo ?? throw new ArgumentNullException(nameof(startInfo));
             this.expectedExitCode = expectedExitCode;
+            CopyText = Command.Create(() => Clipboard.SetText(string.Join(Environment.NewLine, Output.Select(o => o.Data))));
         }
 
         public Process Start()
@@ -79,6 +81,7 @@ namespace JBlam.Multiflash.App
         public ProcessStartInfo StartInfo { get; }
         Process? Process { get; set; }
         public ObservableCollection<ConsoleOutput> Output { get; } = new();
+        public ICommand CopyText { get; }
 
         public int? ExitCode => Process is not null && Process.HasExited ? Process.ExitCode : null;
         public bool? IsSuccess => ExitCode.HasValue ? ExitCode == expectedExitCode : null;

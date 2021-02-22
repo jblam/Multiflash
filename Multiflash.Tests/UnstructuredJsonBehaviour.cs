@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using JBlam.Multiflash;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,32 @@ namespace JBlam.Multiflash.Tests
             var doc = JsonSerializer.Deserialize<UnstructuredContent>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             var output = JsonSerializer.Serialize(doc.Template).Replace("{{PARAMETER-NAME}}", "value");
             Assert.AreEqual(@"{""parameter"":""value""}", output);
+        }
+
+        [TestMethod]
+        public void CanDeserialiseConfigTemplate()
+        {
+            var json = @"{""template"":{""fixed"":1234,""variable"":""{{PARAMETER-ONE}}""}, ""parameters"":[{""identifier"":""PARAMETER-ONE"", ""label"":""One""}]}";
+            var doc = JsonSerializer.Deserialize<ConfigTemplate>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            CollectionAssert.AreEqual(new[] { new Parameter("PARAMETER-ONE", "One") }, (System.Collections.ICollection)doc.Parameters);
+            Assert.IsInstanceOfType(doc.Template, typeof(JsonElement));
+        }
+
+        [TestMethod]
+        public void CanBuildConfig()
+        {
+            var json = @"{""template"":{""fixed"":1234,""variable"":""{{PARAMETER-ONE}}""}, ""parameters"":[{""identifier"":""PARAMETER-ONE"", ""label"":""One""}]}";
+            var doc = JsonSerializer.Deserialize<ConfigTemplate>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var completed = doc.Build(p => p.Label == "One" ? "one" : null);
+            Assert.AreEqual(@"{""fixed"":1234,""variable"":""one""}", completed);
+        }
+
+        [TestMethod]
+        public void ConfigThrowsIfParameterMissing()
+        {
+            var json = @"{""template"":{""fixed"":1234,""variable"":""{{PARAMETER-ONE}}""}, ""parameters"":[{""identifier"":""PARAMETER-ONE"", ""label"":""One""}]}";
+            var doc = JsonSerializer.Deserialize<ConfigTemplate>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            Assert.ThrowsException<ArgumentException>(() => doc.Build(_ => null));
         }
     }
 }

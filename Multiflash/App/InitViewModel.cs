@@ -17,6 +17,10 @@ namespace JBlam.Multiflash.App
         {
             if (toolset is null)
                 throw new ArgumentNullException(nameof(toolset));
+
+            // We explicitly don't want to "run this command at startup" because it leads to a wonky
+            // UX if the user hasn't yet connected the device. It *looks* like we're providing "live
+            // updates" but we're not.
             RefreshPorts = Command.Create(() =>
             {
                 Ports = SerialPort.GetPortNames();
@@ -24,18 +28,26 @@ namespace JBlam.Multiflash.App
                     SelectedPort = null;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Ports)));
             });
-            StartTools = Command.Create(() =>
+            StartTools = Command.Create(async () =>
             {
-                NextViewModel = new ProcessSetViewModel(toolset);
-                // TODO: actually extract the contents
-                _ = NextViewModel.SetBinaries(BinarySetViewModel.ExtractedSet!, SelectedPort!);
+                try
+                {
+                    NextViewModel = new ProcessSetViewModel(toolset);
+                    var (extractedLocation, extractedSet) = await BinarySet.Extract(BinarySetViewModel.BinarySetPath!);
+                    await NextViewModel.SetBinaries(extractedSet!, SelectedPort!, extractedLocation);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                    MessageBox.Show(Application.Current.MainWindow, "Failed to extract data.\r\n\r\n" + ex.ToString(), "Flashing failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Application.Current.Shutdown(1);
+                }
             }, () => SelectedPort != null && (BinarySetViewModel.BinarySetTask?.IsCompletedSuccessfully ?? false));
             BinarySetViewModel.PropertyChanged += (_, args) =>
             {
                 if (args.IsFor(nameof(BinarySetViewModel.EffectiveViewModel)))
                     StartTools.RaiseCanExecuteChanged();
             };
-            Ports = SerialPort.GetPortNames();
         }
 
         private bool? isDragDropValid;
@@ -45,7 +57,7 @@ namespace JBlam.Multiflash.App
         public BinarySetViewModel BinarySetViewModel { get; } = new BinarySetViewModel();
         public ICommand RefreshPorts { get; }
         public ICommand StartTools { get; }
-        public IReadOnlyCollection<string> Ports { get; private set; }
+        public IReadOnlyCollection<string>? Ports { get; private set; }
         public string? SelectedPort
         {
             get => selectedPort;

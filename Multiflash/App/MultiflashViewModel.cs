@@ -10,7 +10,7 @@ namespace JBlam.Multiflash.App
 {
     class MultiflashViewModel : INotifyPropertyChanged
     {
-        public MultiflashViewModel() : this(new DummyToolset()) { }
+        public MultiflashViewModel() : this(new PlatformIoToolset()) { }
         public MultiflashViewModel(IToolset toolset)
         {
             InitViewModel = new(toolset);

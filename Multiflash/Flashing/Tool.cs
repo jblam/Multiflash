@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JBlam.Multiflash.CommandLine;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -83,35 +84,69 @@ namespace JBlam.Multiflash
         }
     }
 
-    public class EspUploaderPyTool : ISetTool
+    class EspUploader : CliSetTool
     {
-        private readonly string pythonPath;
-        private readonly string uploadScriptPath;
+        public override void AppendCliArgs(ICollection<string> processArgs, string? targetPlatform, Binaries binaries, string comPort)
+        {
+            throw new NotImplementedException("ESP8266 upload.py");
+        }
+
+        public override (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
+        {
+            throw new NotImplementedException("ESP8266 upload.py");
+        }
+    }
+
+    class Esptool : CliSetTool
+    {
+        // TODO: this misrepresents compatibility between the ESP32 and ESP8266 SDKs.
+        // - esptool.py (ESP32)
+        // - uploader.py (ESP8266)
+        // seems like the major incompatibility is the uploader.py does not support
+        // multiple binaries.
+        //
+        // Decisions/research needed:
+        // - do we *really need* multiple binaries? might be a slightly better UX to see
+        //   each file being flashed
+        // - do we want to support PIO's toolset in and of itself?
+        // - are PIO's and Arduino's toolsets mutually compatible for the *same chip*?
+        // - are the 8266 and 32 toolsets mutually compatible, just with different capabilities?
+
         private static readonly IReadOnlyCollection<string> validTargetPlatforms = new[]
         {
             "esp8266",
             "esp32"
         };
-
-        public EspUploaderPyTool(string pythonPath, string uploadScriptPath)
+        public override void AppendCliArgs(ICollection<string> processArgs, string? targetPlatform, Binaries binaries, string comPort)
         {
-            if (string.IsNullOrEmpty(pythonPath))
+            processArgs.Add("--chip");
+            processArgs.Add(targetPlatform!.ToLowerInvariant());
+            processArgs.Add("--port");
+            processArgs.Add(comPort);
+            processArgs.Add("--baud");
+            processArgs.Add("460800"); // TODO: PIO's value is different to arduino's
+            processArgs.Add("write_flash");
+            foreach (var binary in binaries)
             {
-                throw new ArgumentException($"'{nameof(pythonPath)}' cannot be null or empty", nameof(pythonPath));
+                if (!CanHandle(binary))
+                    throw new InvalidOperationException("ProcessStartInfo requested for an incompatible binary");
+                processArgs.Add($"0x{binary.StartAddress:X}");
+                processArgs.Add(binary.Path);
             }
-
-            if (string.IsNullOrEmpty(uploadScriptPath))
-            {
-                throw new ArgumentException($"'{nameof(uploadScriptPath)}' cannot be null or empty", nameof(uploadScriptPath));
-            }
-
-            this.pythonPath = pythonPath;
-            this.uploadScriptPath = uploadScriptPath;
         }
+
         static bool CanHandlePlatform(string? targetPlatform) => targetPlatform is string platform
             && validTargetPlatforms.Contains(platform.ToLowerInvariant());
         static bool CanHandle(Binary binary) => binary.Format == BinaryFormat.Bin;
-
+        public override (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
+        {
+            if (!CanHandlePlatform(targetPlatform))
+                return (Array.Empty<Binary>(), binaries);
+            var handled = binaries.TakeWhile(CanHandle).ToList();
+            var unhandled = binaries.Skip(handled.Count).ToList();
+            return (handled, unhandled);
+        }
+    }
 
         /* Sensor, ESP32, PIO build
          * ".platformio\penv\scripts\python.exe" ".platformio\packages\tool-esptoolpy\esptool.py" --chip esp32 --port "COM4" --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x1000 .platformio\packages\framework-arduinoespressif32\tools\sdk\bin\bootloader_dio_40m.bin 
@@ -128,47 +163,12 @@ namespace JBlam.Multiflash
 2686976 spiffs.bin
         */
 
-        public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
-        {
-            if (!CanHandlePlatform(targetPlatform))
-                return (Array.Empty<Binary>(), binaries);
-            var handled = binaries.TakeWhile(CanHandle).ToList();
-            var unhandled = binaries.Skip(handled.Count).ToList();
-            return (handled, unhandled);
-        }
-
-        public ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort)
-        {
-            var output = new ProcessStartInfo(pythonPath)
-            {
-                ArgumentList =
-                {
-                    uploadScriptPath,
-                    "--chip",
-                    targetPlatform!.ToLowerInvariant(),
-                    "--port",
-                    comPort,
-                    "--baud",
-                    "460800", // TODO: PIO's value is different to arduino's?
-                    "write_flash"
-                }
-            };
-            foreach (var binary in binaries)
-            {
-                if (!CanHandle(binary))
-                    throw new InvalidOperationException("ProcessStartInfo requested for an incompatible binary");
-                output.ArgumentList.Add(binary.StartAddress.ToString("X"));
-                output.ArgumentList.Add(binary.Path);
-            }
-            return output;
-        }
-    }
 
     public class DemoTool : ISetTool
     {
         public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries)
         {
-            return (binaries, Array.Empty<Binary>());
+            return (binaries.Take(1).ToList(), binaries.Skip(1).ToList());
         }
 
         public ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort) => new ProcessStartInfo(@"Multiflash.DemoTool.exe")

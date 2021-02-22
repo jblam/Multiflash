@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JBlam.Multiflash.CommandLine;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -39,7 +40,13 @@ namespace JBlam.Multiflash
 
     public class DummyToolset : IToolset
     {
-        public FlashPlan GetPlan(BinarySet set) => FlashPlan.Success(new[] { ((ISetTool)new DemoTool(), set.Binaries) });
+        readonly ISetTool tool = new DemoTool();
+        public FlashPlan GetPlan(BinarySet set) => 
+            FlashPlan.Success(new[] 
+            {
+                (tool, (Binaries)set.Binaries.Take(1).ToList()),
+                (tool, set.Binaries.Skip(1).ToList()),
+            });
     }
 
     public abstract class Toolset : IToolset
@@ -88,10 +95,27 @@ namespace JBlam.Multiflash
         readonly Avrdude avrdude = new(
             Path.Combine(ExpectedProgramFilesRoot, @"hardware\tools\avr\bin\avrdude.exe"),
             Path.Combine(ExpectedProgramFilesRoot, @"hardware\tools\avr\etc\avrdude.conf"));
-        readonly EspUploaderPyTool espUploaderPyTool = new(
+        readonly ISetTool espUploaderPyTool = new PythonTool(
             Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\tools\python3\3.7.2-post1\python.exe"),
-            Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\hardware\esp8266\2.7.4\tools\upload.py"));
+            Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\hardware\esp8266\2.7.4\tools\upload.py"),
+            new EspUploader());
+        readonly ISetTool esptool = new StandaloneExeTool(
+            @"packages\esp32\tools\esptool_py\2.6.1\esptool.exe",
+            new Esptool());
 
         public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, new ISetTool[] { avrdude, espUploaderPyTool });
+    }
+
+    public class PlatformIoToolset : Toolset
+    {
+        static readonly string ExpectedAppDataRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                @".platformio");
+        readonly ISetTool espUploaderPyTool = new PythonTool(
+            Path.Combine(ExpectedAppDataRoot, @"penv\scripts\python.exe"),
+            Path.Combine(ExpectedAppDataRoot, @"packages\tool-esptoolpy\esptool.py"),
+            new Esptool());
+
+        public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, new ISetTool[] { espUploaderPyTool });
     }
 }
