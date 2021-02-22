@@ -8,6 +8,7 @@ namespace JBlam.Multiflash.Tools
 
     class EspUploader : CliSetTool
     {
+        public override string Name => "ESP8266 Upload.py";
         public override void AppendCliArgs(ICollection<string> processArgs, string? targetPlatform, Binaries binaries, string comPort)
         {
             throw new NotImplementedException("ESP8266 upload.py");

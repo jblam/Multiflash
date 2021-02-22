@@ -22,6 +22,8 @@ namespace JBlam.Multiflash.Tools
         // - are PIO's and Arduino's toolsets mutually compatible for the *same chip*?
         // - are the 8266 and 32 toolsets mutually compatible, just with different capabilities?
 
+        public override string Name => "ESPTool";
+
         private static readonly IReadOnlyCollection<string> validTargetPlatforms = new[]
         {
             "esp8266",

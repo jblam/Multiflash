@@ -16,5 +16,14 @@ namespace JBlam.Multiflash.Tools
             new Esptool());
 
         public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, new ISetTool[] { espUploaderPyTool });
+
+        public override IEnumerable<ISetTool> MissingTools
+        {
+            get
+            {
+                if (!espUploaderPyTool.IsInstalled())
+                    yield return espUploaderPyTool;
+            }
+        }
     }
 }

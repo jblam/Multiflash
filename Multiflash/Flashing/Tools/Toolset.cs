@@ -37,6 +37,8 @@ namespace JBlam.Multiflash.Tools
             return FlashPlan.Success(output);
         }
 
+        public abstract IEnumerable<ISetTool> MissingTools { get; }
+
         public abstract FlashPlan GetPlan(BinarySet set);
     }
 }

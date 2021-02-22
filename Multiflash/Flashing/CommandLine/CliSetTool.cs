@@ -6,7 +6,9 @@ namespace JBlam.Multiflash.CommandLine
 
     abstract class CliSetTool
     {
+        public abstract string Name { get; }
         public abstract (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries);
         public abstract void AppendCliArgs(ICollection<string> processArgs, string? targetPlatform, Binaries binaries, string comPort);
+        internal virtual bool IsInstalled() => true;
     }
 }
