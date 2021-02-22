@@ -25,5 +25,7 @@ namespace JBlam.Multiflash.Tools
                     yield return espUploaderPyTool;
             }
         }
+
+        public override string ToolsetName => "PlatformIO tools";
     }
 }

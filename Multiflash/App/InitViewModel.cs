@@ -16,8 +16,7 @@ namespace JBlam.Multiflash.App
     {
         public InitViewModel(Toolset toolset)
         {
-            if (toolset is null)
-                throw new ArgumentNullException(nameof(toolset));
+            Toolset = toolset ?? throw new ArgumentNullException(nameof(toolset));
 
             // We explicitly don't want to "run this command at startup" because it leads to a wonky
             // UX if the user hasn't yet connected the device. It *looks* like we're providing "live
@@ -43,7 +42,7 @@ namespace JBlam.Multiflash.App
                     MessageBox.Show(Application.Current.MainWindow, "Failed to extract data.\r\n\r\n" + ex.ToString(), "Flashing failed", MessageBoxButton.OK, MessageBoxImage.Error);
                     Application.Current.Shutdown(1);
                 }
-            }, () => SelectedPort != null && (BinarySetViewModel.BinarySetTask?.IsCompletedSuccessfully ?? false));
+            }, () => SelectedPort != null && Toolset.IsInstalled && (BinarySetViewModel.BinarySetTask?.IsCompletedSuccessfully ?? false));
             BinarySetViewModel.PropertyChanged += (_, args) =>
             {
                 if (args.IsFor(nameof(BinarySetViewModel.EffectiveViewModel)))
@@ -87,6 +86,8 @@ namespace JBlam.Multiflash.App
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDragDropValid)));
             }
         }
+
+        public Toolset Toolset { get; }
 
         public void OnDragEnter(DragEventArgs args)
         {

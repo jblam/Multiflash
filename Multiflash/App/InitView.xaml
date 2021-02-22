@@ -25,6 +25,7 @@
             NullValue="{StaticResource DefaultBackground}"
             TrueValue="{StaticResource ValidBackground}"
             FalseValue="{StaticResource InvalidBackground}" />
+        <helpers:ConditionalValueConverter x:Key="BoolToCollapsed" TrueValue="Collapsed" FalseValue="Visible" />
     </UserControl.Resources>
     <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
             DragEnter="DockPanel_DragEnter"
@@ -41,6 +42,22 @@
                 <local:ComPortSelector />
             </StackPanel>
             <local:BinarySetPreview DataContext="{Binding BinarySetViewModel}" Margin="20"></local:BinarySetPreview>
+            <Label DataContext="{Binding Toolset}" Margin="20">
+                <StackPanel>
+                    <TextBlock>
+                        <Run>Toolset:</Run>
+                        <Run Text="{Binding ToolsetName, Mode=OneTime}" />
+                    </TextBlock>
+                    <TextBlock Visibility="{Binding IsInstalled, Converter={StaticResource BoolToCollapsed}}">Missing tools:</TextBlock>
+                    <ItemsControl ItemsSource="{Binding MissingTools}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ToolName}" Margin="4 0 0 0" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Label>
             <Button Command="{Binding StartTools}" Margin="20">Go</Button>
         </StackPanel>
     </Border>

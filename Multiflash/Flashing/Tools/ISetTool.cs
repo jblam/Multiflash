@@ -10,7 +10,7 @@ namespace JBlam.Multiflash.Tools
 
     public interface ISetTool
     {
-        string Name { get; }
+        string ToolName { get; }
         bool IsInstalled();
         (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries);
         ProcessStartInfo GetStartInfo(string? targetPlatform, Binaries binaries, string comPort);

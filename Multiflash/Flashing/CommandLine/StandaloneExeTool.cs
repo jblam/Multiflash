@@ -18,6 +18,8 @@ namespace JBlam.Multiflash.CommandLine
             this.inner = inner;
         }
 
+        public string ToolName => inner.Name;
+
         public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries) =>
             inner.CanHandle(targetPlatform, binaries);
 

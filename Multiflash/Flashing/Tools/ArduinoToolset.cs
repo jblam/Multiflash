@@ -37,5 +37,7 @@ namespace JBlam.Multiflash.Tools
         public override FlashPlan GetPlan(BinarySet set) => GetPlan(set, tools);
 
         public override IEnumerable<ISetTool> MissingTools => tools.Where(t => !t.IsInstalled());
+
+        public override string ToolsetName => "Arduino tools";
     }
 }

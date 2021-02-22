@@ -33,7 +33,7 @@ namespace JBlam.Multiflash.CommandLine
             return startInfo;
         }
 
-        public string Name => inner.Name;
+        public string ToolName => inner.Name;
 
         public bool IsInstalled() => File.Exists(scriptPath) && File.Exists(pythonPath);
     }
