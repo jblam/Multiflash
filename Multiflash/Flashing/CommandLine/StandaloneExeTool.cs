@@ -1,5 +1,7 @@
+using JBlam.Multiflash.Tools;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace JBlam.Multiflash.CommandLine
 {
@@ -16,6 +18,8 @@ namespace JBlam.Multiflash.CommandLine
             this.inner = inner;
         }
 
+        public string ToolName => inner.Name;
+
         public (Binaries handled, Binaries remaining) CanHandle(string? targetPlatform, Binaries binaries) =>
             inner.CanHandle(targetPlatform, binaries);
 
@@ -25,5 +29,7 @@ namespace JBlam.Multiflash.CommandLine
             inner.AppendCliArgs(startInfo.ArgumentList, targetPlatform, binaries, comPort);
             return startInfo;
         }
+
+        public bool IsInstalled() => File.Exists(exePath) && inner.IsInstalled();
     }
 }

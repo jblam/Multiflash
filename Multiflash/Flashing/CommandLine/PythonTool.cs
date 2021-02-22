@@ -1,5 +1,7 @@
+using JBlam.Multiflash.Tools;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 namespace JBlam.Multiflash.CommandLine
 {
@@ -30,5 +32,9 @@ namespace JBlam.Multiflash.CommandLine
             inner.AppendCliArgs(startInfo.ArgumentList, targetPlatform, binaries, comPort);
             return startInfo;
         }
+
+        public string ToolName => inner.Name;
+
+        public bool IsInstalled() => File.Exists(scriptPath) && File.Exists(pythonPath);
     }
 }
