@@ -12,4 +12,17 @@
     <PackageReference Include="System.IO.Ports" Version="5.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!--
+      JB 2021-02-22
+      Workaround for self-contained trimming breaking WPF
+      https://github.com/dotnet/sdk/issues/14261
+    -->
+    <TrimmerRootAssembly Include="System.Runtime" />
+    <TrimmerRootAssembly Include="System.Runtime.Extensions" />
+    <TrimmerRootAssembly Include="System.Diagnostics.Debug" />
+    <!-- Should probably add myself too. -->
+    <TrimmerRootAssembly Include="Multiflash" />
+  </ItemGroup>
+
 </Project>
