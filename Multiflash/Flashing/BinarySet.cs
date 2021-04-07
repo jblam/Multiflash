@@ -17,6 +17,7 @@ namespace JBlam.Multiflash
         public string Description { get; init; } = string.Empty;
         public IReadOnlyCollection<Verification> Verifications { get; init; } = Array.Empty<Verification>();
         public ConfigTemplate? ConfigTemplate { get; init; }
+        public int BaudRate { get; init; } = 115200;
 
         public static async Task<(string extractLocation, BinarySet? contents)> Extract(string archivePath)
         {
