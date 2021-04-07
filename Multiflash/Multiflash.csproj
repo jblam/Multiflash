@@ -11,6 +11,7 @@
     <Description>A GUI application for flashing microcontroller firmware.</Description>
     <Copyright>© Jeremy Blamey 2021</Copyright>
     <RepositoryUrl>https://github.com/jblam/Multiflash</RepositoryUrl>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
