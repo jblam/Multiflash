@@ -16,7 +16,7 @@ namespace JBlam.Multiflash.App
     {
         public ConfigurationViewModel(BinarySet binarySet, string comPort)
         {
-            Connection = SerialConnection.Open(comPort, 115200);
+            Connection = SerialConnection.Open(comPort, binarySet.BaudRate);
             GetStatus = Command.Create(async () => StatusValue = await Connection.Prompt("?", true));
             Verifications = binarySet.Verifications.Select(v => new VerificationViewModel(v, Connection)).ToList();
             Parameters = binarySet.ConfigTemplate?.Parameters.Select(p => new ParameterViewModel(p)).ToList() as IReadOnlyCollection<ParameterViewModel>

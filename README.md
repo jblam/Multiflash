@@ -2,6 +2,14 @@
 
 A GUI tool for flashing Arduino-like devices with Arduino-like firmware.
 
+Only Windows 10 2004 and above is officially supported. Linux and OSX are not supported.
+
+## Installation instructions
+
+Extract the zip file and run `multiflash.exe`.
+
+A valid Multiflash archive must be provided by the microcontroller firmware author.
+
 ## What
 
 A GUI which provides a drag-drop UX for flashing precompiled binaries.
