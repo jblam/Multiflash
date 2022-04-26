@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <RootNamespace>JBlam.Multiflash</RootNamespace>
     <Nullable>enable</Nullable>
@@ -11,7 +11,7 @@
     <Description>A GUI application for flashing microcontroller firmware.</Description>
     <Copyright>© Jeremy Blamey 2021</Copyright>
     <RepositoryUrl>https://github.com/jblam/Multiflash</RepositoryUrl>
-    <Version>1.1.0</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

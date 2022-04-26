@@ -23,11 +23,11 @@ namespace JBlam.Multiflash.Tools
         // TODO: the CLI is not implemented due to outstanding questions about the difference between upload and esptool.
         // ESP8266 compat is not required for initial release.
         static readonly ISetTool espUploaderPyTool = new PythonTool(
-            Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\tools\python3\3.7.2-post1\python.exe"),
-            Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\hardware\esp8266\2.7.4\tools\upload.py"),
+            FindVersionedPath(Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\tools\python3"), "python.exe"),
+            FindVersionedPath(Path.Combine(ExpectedAppDataRoot, @"packages\esp8266\hardware\esp8266"), @"tools\upload.py"),
             new EspUploader());
         static readonly ISetTool esptool = new StandaloneExeTool(
-            Path.Combine(ExpectedAppDataRoot, @"packages\esp32\tools\esptool_py\2.6.1\esptool.exe"),
+            FindVersionedPath(Path.Combine(ExpectedAppDataRoot, @"packages\esp32\tools\esptool_py"), "esptool.exe"),
             new Esptool());
 
         readonly IReadOnlyCollection<ISetTool> tools = new[]
