@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,5 +45,22 @@ namespace JBlam.Multiflash.Tools
         public abstract IEnumerable<ISetTool> MissingTools { get; }
 
         public abstract FlashPlan GetPlan(BinarySet set);
+
+        internal static string FindVersionedPath(string pathRoot, string pathLeaf)
+        {
+            if (!Directory.Exists(pathRoot))
+            {
+                return Path.Combine(pathRoot, "0.0.0", pathLeaf);
+            }
+            foreach (var directory in Directory.EnumerateDirectories(pathRoot))
+            {
+                var candidate = Path.Combine(directory, pathLeaf);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+            return Path.Combine(pathRoot, "0.0.0", pathLeaf);
+        }
     }
 }
